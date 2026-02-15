@@ -395,12 +395,16 @@
         <div class="protokoll-bereich">
             <!-- Metadaten kompakt -->
             <div class="metadaten">
-                <div class="metadaten-grid">
-                    <input type="text" id="pruefling" placeholder="Prüfling">
-                    <input type="date" id="datum">
-                    <input type="text" id="pruefer" placeholder="Prüfer/-in">
-                    <input type="text" id="protokollant" placeholder="Protokollant/-in">
-                    <input type="text" id="fachpruefungsleitung" placeholder="Fachprüfungsleitung" style="grid-column: span 2;">
+                <div class="metadaten">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+                        <input type="date" id="datum">
+                        <input type="text" id="pruefling" placeholder="Prüfling">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                        <input type="text" id="pruefer" placeholder="Prüfer/-in">
+                        <input type="text" id="protokollant" placeholder="Protokollant/-in">
+                        <input type="text" id="fachpruefungsleitung" placeholder="Fachprüfungsleitung">
+                    </div>
                 </div>
             </div>
             

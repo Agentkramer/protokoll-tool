@@ -103,53 +103,21 @@
 </head>
 <body>
     <div class="login-container">
-        <h1>🎭 Tanz-Protokoll</h1>
-        <p class="subtitle">Bitte melden Sie sich an</p>
-        
-        <div class="error-message" id="errorMessage"></div>
-        
-        <form id="loginForm" onsubmit="login(event)">
-            <div class="form-group">
-                <label for="password">Passwort</label>
-                <input type="password" id="password" required autofocus>
-            </div>
-            
-            <button type="submit" class="btn-login">Anmelden</button>
-        </form>
-    </div>
+    <h1>Protokoll-Tool</h1>
+    <p class="subtitle">Bitte melden Sie sich an</p>
     
-    <script>
-        async function login(event) {
-            event.preventDefault();
-            
-            const password = document.getElementById('password').value;
-            const errorMsg = document.getElementById('errorMessage');
-            
-            try {
-                const response = await fetch('/api/auth', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ password })
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok && data.success) {
-                    // Speichere Token
-                    localStorage.setItem('authToken', data.token);
-                    // Weiterleitung zur App
-                    window.location.href = 'app.html';
-                } else {
-                    errorMsg.textContent = data.error || 'Anmeldung fehlgeschlagen';
-                    errorMsg.classList.add('show');
-                }
-            } catch (error) {
-                errorMsg.textContent = 'Verbindungsfehler. Bitte versuchen Sie es erneut.';
-                errorMsg.classList.add('show');
-            }
-        }
-    </script>
+    <div class="error-message" id="error-message"></div>
+    
+    <form id="loginForm" onsubmit="login(event)">
+        <div class="form-group">
+            <label for="password">Passwort</label>
+            <input type="password" id="password" required autofocus>
+        </div>
+        
+        <button type="submit" class="btn-login">Anmelden</button>
+    </form>
+</div>
+    
+   <script src="js/auth.js"></script>
 </body>
 </html>

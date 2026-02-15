@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prüfung einrichten | Protokoll-Tool</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .setup-container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .header h1 {
+            margin: 0;
+            color: #333;
+        }
+        
+        .exam-badge {
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .exam-badge.tanz {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .exam-badge.sportspiele {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section h2 {
+            color: #555;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: #555;
+            font-size: 14px;
+        }
+        
+        .form-group input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .csv-upload {
+            display: block;
+            border: 2px dashed #4facfe;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            background: #f8fcff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .csv-upload:hover {
+            background: #e6f7ff;
+            border-color: #2196F3;
+        }
+        
+        .csv-upload input[type="file"] {
+            display: none;
+        }
+        
+        .csv-upload-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        .csv-example {
+            margin-top: 15px;
+            padding: 15px;
+            background: #fff;
+            border-radius: 5px;
+            text-align: left;
+            font-family: monospace;
+            font-size: 12px;
+            border: 1px solid #ddd;
+        }
+        
+        .pruefling-list {
+            margin-top: 20px;
+        }
+        
+        .pruefling-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            margin-bottom: 8px;
+        }
+        
+        .pruefling-item:nth-child(even) {
+            background: #f0f0f0;
+        }
+        
+        .pruefling-name {
+            font-weight: 500;
+        }
+        
+        .pruefling-actions button {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .pruefling-actions button:hover {
+            background: #c0392b;
+        }
+        
+        .add-pruefling-btn {
+            width: 100%;
+            padding: 12px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+        
+        .add-pruefling-btn:hover {
+            background: #229954;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+        
+        .error-message {
+            background: #fee;
+            color: #c33;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .success-message {
+            background: #efe;
+            color: #3c3;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .manual-add-form {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f0f8ff;
+            border-radius: 5px;
+            border: 1px solid #4facfe;
+        }
+        
+        .manual-add-form input {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .manual-add-form .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .manual-add-form button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+        <div class="header">
+            <h1>📋 Prüfung einrichten</h1>
+            <div class="exam-badge" id="examBadge"></div>
+        </div>
+        
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+        
+        <!-- Metadaten -->
+        <div class="section">
+            <h2>Prüfungsinformationen</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="datum">Datum</label>
+                    <input type="date" id="datum" required>
+                </div>
+                <div class="form-group">
+                    <label for="pruefer">Prüfer/-in</label>
+                    <input type="text" id="pruefer" placeholder="z.B. Dr. Schmidt" required>
+                </div>
+                <div class="form-group">
+                    <label for="protokollant">Protokollant/-in</label>
+                    <input type="text" id="protokollant" placeholder="z.B. Müller" required>
+                </div>
+                <div class="form-group">
+                    <label for="fachpruefungsleitung">Fachprüfungsleiter/-in</label>
+                    <input type="text" id="fachpruefungsleitung" placeholder="z.B. Prof. Weber" required>
+                </div>
+            </div>
+        </div>
+        
+        <!-- CSV Import -->
+        <div class="section">
+            <h2>Prüflinge importieren</h2>
+            <div>
+                <label for="csvFile" class="csv-upload">
+                    <div class="csv-upload-icon">📄</div>
+                    <div>
+                        <strong>CSV-Datei hier ablegen oder klicken</strong>
+                        <p style="margin: 5px 0; color: #666; font-size: 14px;">
+                            Import von Prüflingsnamen aus CSV
+                        </p>
+                    </div>
+                    <input type="file" id="csvFile" accept=".csv">
+                </label>
+            </div>
+            
+            <div class="csv-example">
+                <strong>📝 CSV-Format (Beispiel):</strong><br>
+                Name<br>
+                Max Mustermann<br>
+                Anna Schmidt<br>
+                Tom Weber
+            </div>
+        </div>
+        
+        <!-- Prüflingsliste -->
+        <div class="section">
+            <h2>Prüflingsliste (<span id="prueflingCount">0</span>)</h2>
+            <div class="pruefling-list" id="prueflingList">
+                <p style="color: #999; text-align: center; padding: 20px;">
+                    Noch keine Prüflinge hinzugefügt
+                </p>
+            </div>
+            
+            <button class="add-pruefling-btn" onclick="toggleManualAdd()">
+                ➕ Prüfling manuell hinzufügen
+            </button>
+            
+            <div class="manual-add-form" id="manualAddForm">
+                <input type="text" id="manualName" placeholder="Name des Prüflings" autofocus>
+                <div class="btn-group">
+                    <button style="background: #27ae60; color: white;" onclick="addManualPruefling()">
+                        Hinzufügen
+                    </button>
+                    <button style="background: #95a5a6; color: white;" onclick="toggleManualAdd()">
+                        Abbrechen
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button class="btn btn-secondary" onclick="goBack()">
+                ← Zurück
+            </button>
+            <button class="btn btn-primary" onclick="startExam()" id="startBtn" disabled>
+                Prüfung starten →
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Auth-Check
+        if (!sessionStorage.getItem('authenticated')) {
+            window.location.href = 'index.html';
+        }
+        
+        const examType = sessionStorage.getItem('examType');
+        if (!examType) {
+            window.location.href = 'exam-selection.html';
+        }
+        
+        // Exam Badge anzeigen
+        const badge = document.getElementById('examBadge');
+        badge.textContent = examType === 'tanz' ? '💃 Tanz' : '⚽ Sportspiele';
+        badge.classList.add(examType);
+        
+        // Heutiges Datum vorausfüllen
+        document.getElementById('datum').valueAsDate = new Date();
+        
+        // Prüflinge Array
+        let prueflings = [];
+        
+        // CSV Upload Handler
+        document.getElementById('csvFile').addEventListener('change', handleCSVUpload);
+        
+        function handleCSVUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                parseCSV(text);
+            };
+            reader.readAsText(file);
+        }
+        
+        function parseCSV(text) {
+            const lines = text.split('\n').filter(line => line.trim());
+            
+            // Erste Zeile überspringen (Header)
+            const names = lines.slice(1).map(line => line.trim()).filter(name => name);
+            
+            if (names.length === 0) {
+                showError('Keine gültigen Namen in CSV gefunden');
+                return;
+            }
+            
+            // Prüflinge hinzufügen
+            names.forEach(name => {
+                if (!prueflings.find(p => p.name === name)) {
+                    prueflings.push({ name });
+                }
+            });
+            
+            updatePrueflingList();
+            showSuccess(`${names.length} Prüfling(e) importiert`);
+        }
+        
+        function toggleManualAdd() {
+            const form = document.getElementById('manualAddForm');
+            const isVisible = form.style.display === 'block';
+            form.style.display = isVisible ? 'none' : 'block';
+            
+            if (!isVisible) {
+                document.getElementById('manualName').focus();
+            } else {
+                document.getElementById('manualName').value = '';
+            }
+        }
+        
+        function addManualPruefling() {
+            const nameInput = document.getElementById('manualName');
+            const name = nameInput.value.trim();
+            
+            if (!name) {
+                showError('Bitte Namen eingeben');
+                return;
+            }
+            
+            if (prueflings.find(p => p.name === name)) {
+                showError('Prüfling bereits vorhanden');
+                return;
+            }
+            
+            prueflings.push({ name });
+            updatePrueflingList();
+            nameInput.value = '';
+            nameInput.focus();
+            showSuccess('Prüfling hinzugefügt');
+        }
+        
+        // Enter-Taste im Manual-Add
+        document.getElementById('manualName').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addManualPruefling();
+            }
+        });
+        
+        function removePruefling(index) {
+            prueflings.splice(index, 1);
+            updatePrueflingList();
+        }
+        
+        function updatePrueflingList() {
+            const list = document.getElementById('prueflingList');
+            const count = document.getElementById('prueflingCount');
+            const startBtn = document.getElementById('startBtn');
+            
+            count.textContent = prueflings.length;
+            
+            if (prueflings.length === 0) {
+                list.innerHTML = '<p style="color: #999; text-align: center; padding: 20px;">Noch keine Prüflinge hinzugefügt</p>';
+                startBtn.disabled = true;
+            } else {
+                list.innerHTML = prueflings.map((p, i) => `
+                    <div class="pruefling-item">
+                        <span class="pruefling-name">${i + 1}. ${p.name}</span>
+                        <div class="pruefling-actions">
+                            <button onclick="removePruefling(${i})">🗑 Entfernen</button>
+                        </div>
+                    </div>
+                `).join('');
+                startBtn.disabled = false;
+            }
+        }
+        
+        async function startExam() {
+            // Validierung
+            const datum = document.getElementById('datum').value;
+            const pruefer = document.getElementById('pruefer').value.trim();
+            const protokollant = document.getElementById('protokollant').value.trim();
+            const fachpruefungsleitung = document.getElementById('fachpruefungsleitung').value.trim();
+            
+            if (!datum || !pruefer || !protokollant || !fachpruefungsleitung) {
+                showError('Bitte alle Felder ausfüllen');
+                return;
+            }
+            
+            if (prueflings.length === 0) {
+                showError('Bitte mindestens einen Prüfling hinzufügen');
+                return;
+            }
+            
+            // Session in DB erstellen
+            try {
+                const response = await fetch('/api/sessions/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        exam_type: examType,
+                        datum,
+                        pruefer,
+                        protokollant,
+                        fachpruefungsleitung,
+                        prueflings: prueflings.map(p => p.name)
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Session-ID speichern und zur Protokoll-Seite weiterleiten
+                    sessionStorage.setItem('sessionId', data.sessionId);
+                    window.location.href = examType + '.html';
+                } else {
+                    showError(data.error || 'Fehler beim Erstellen der Session');
+                }
+            } catch (error) {
+                showError('Verbindungsfehler: ' + error.message);
+            }
+        }
+        
+        function goBack() {
+            window.location.href = 'exam-selection.html';
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => errorDiv.style.display = 'none', 5000);
+        }
+        
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            setTimeout(() => successDiv.style.display = 'none', 3000);
+        }
+    </script>
+</body>
+</html>
