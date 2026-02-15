@@ -1,6 +1,6 @@
-# 🎭 Tanz-Protokoll Tool
+Protokoll Tool
 
-Professionelles Tool für die Erstellung von Tanzprüfungsprotokollen mit KI-Unterstützung.
+Professionelles Tool für die Erstellung von Prüfungsprotokollen mit KI-Unterstützung.
 
 ## ✨ Features
 
