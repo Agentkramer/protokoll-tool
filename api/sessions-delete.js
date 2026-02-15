@@ -1,4 +1,4 @@
-const { supabase } = require('../../lib/supabase.js');
+const { supabase } = require('../lib/supabase.js');
 
 async function handler(req, res) {
   if (req.method !== 'POST') {
