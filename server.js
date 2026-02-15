@@ -7,14 +7,14 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-const auth = require('./api/auth');
-const generate = require('./api/generate');
-const sessionsCreate = require('./api/sessions/create');
-const sessionsGet = require('./api/sessions/get');
-const sessionsComplete = require('./api/sessions/complete');
-const sessionsActive = require('./api/sessions/active');
-const sessionsCompleted = require('./api/sessions/completed');
-const sessionsDelete = require('./api/sessions/delete');
+const sessionsCreate = require('./api/sessions-create');
+const sessionsGet = require('./api/sessions-get');
+const sessionsComplete = require('./api/sessions-complete');
+const sessionsActive = require('./api/sessions-active');
+const sessionsCompleted = require('./api/sessions-completed');
+const sessionsDelete = require('./api/sessions-delete');
+const prueflingsUpdate = require('./api/prueflings-update');
+const prueflingsCreate = require('./api/prueflings-create');
 const prueflingsUpdate = require('./api/prueflings/update');
 const prueflingsCreate = require('./api/prueflings/create');
 
