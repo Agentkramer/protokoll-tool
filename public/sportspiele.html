@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tanz-Protokoll Tool</title>
+    <title>Sportspiele-Protokoll Tool</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -27,14 +27,28 @@
         
         .header h1 { font-size: 20px; }
         
-        .logout-btn {
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-header {
             padding: 6px 12px;
-            background: #e74c3c;
-            color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .btn-end-session {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
         }
         
         .main-container {
@@ -68,14 +82,20 @@
             gap: 8px;
         }
         
-        .metadaten input {
+        .metadaten input, .metadaten select {
             padding: 6px 10px;
             border: 1px solid #ddd;
             border-radius: 4px;
             font-size: 12px;
+            background: #e8e8e8;
+            color: #666;
         }
         
-        .metadaten input:focus {
+        .metadaten input:disabled, .metadaten select:disabled {
+            cursor: not-allowed;
+        }
+        
+        .metadaten input:focus, .metadaten select:focus {
             outline: none;
             border-color: #3498db;
         }
@@ -248,6 +268,51 @@
         
         .warnung.aktiv { display: block; }
         
+        /* Actions */
+        .actions {
+            display: flex;
+            gap: 10px;
+            padding: 12px;
+            border-top: 2px solid #ecf0f1;
+            background: #fafafa;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-ki {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        
         /* Sidebar */
         .sidebar {
             flex: 1;
@@ -271,6 +336,37 @@
         .sidebar-header h2 {
             font-size: 14px;
             margin-bottom: 8px;
+        }
+        
+        .pruefling-controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .pruefling-select {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid #fff;
+            border-radius: 4px;
+            font-size: 12px;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .btn-add-pruefling {
+            padding: 6px 12px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .btn-add-pruefling:hover {
+            background: #229954;
         }
         
         .kategorie-select {
@@ -304,10 +400,10 @@
         }
         
         .textbaustein {
-            padding: 8px;
             margin-bottom: 6px;
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
+            padding: 8px 10px;
+            background: white;
+            border: 2px solid #ecf0f1;
             border-radius: 4px;
             cursor: pointer;
             transition: all 0.2s;
@@ -316,95 +412,113 @@
         }
         
         .textbaustein:hover {
-            background: #e3f2fd;
             border-color: #3498db;
-            transform: translateX(3px);
+            background: #f8f9fa;
         }
         
         .textbaustein.ausgewaehlt {
-            background: #c8e6c9;
-            border-color: #4caf50;
+            background: #d4edda;
+            border-color: #28a745;
             font-weight: 500;
         }
         
-        .textbaustein.ausgewaehlt:hover {
-            background: #ffcdd2;
-            border-color: #f44336;
+        /* Modal für neuen Prüfling */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
         }
         
-        /* Actions */
-        .actions {
-            padding: 12px;
-            border-top: 2px solid #ecf0f1;
+        .modal.active {
             display: flex;
-            gap: 8px;
         }
         
-        .btn {
-            padding: 8px 16px;
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .modal-content h3 {
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        
+        .modal-content input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .modal-buttons button {
+            flex: 1;
+            padding: 10px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 12px;
             font-weight: 500;
-            transition: all 0.2s;
         }
         
-        .btn-ki {
-            background: #9b59b6;
-            color: white;
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #7f8c8d;
         }
         
-        .btn-ki:hover { background: #8e44ad; }
-        .btn-ki:disabled {
-            background: #bdc3c7;
-            cursor: not-allowed;
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s infinite;
         }
         
-        .btn-primary {
-            background: #3498db;
-            color: white;
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
         }
-        
-        .btn-primary:hover { background: #2980b9; }
-        
-        .btn-danger {
-            background: #e74c3c;
-            color: white;
-        }
-        
-        .btn-danger:hover { background: #c0392b; }
-        
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb {
-            background: #bdc3c7;
-            border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb:hover { background: #95a5a6; }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>🎭 Tanz-Protokoll Tool</h1>
-        <button class="logout-btn" onclick="logout()">Abmelden</button>
+        <h1><span id="sportIcon">⚽</span> <span id="sportName">Sportspiele</span>-Protokoll</h1>
+        <div class="header-actions">
+            <button class="btn-header" style="background: #3498db;" onclick="zurueckZurAuswahl()">← Prüfungsauswahl</button>
+            <button class="btn-header btn-end-session" onclick="sessionBeenden()">🏁 Prüfung beenden</button>
+            <button class="btn-header logout-btn" onclick="logout()">Abmelden</button>
+        </div>
     </div>
     
     <div class="main-container">
+        <!-- Protokoll-Bereich -->
         <div class="protokoll-bereich">
-            <!-- Metadaten kompakt -->
+            <!-- Metadaten (schreibgeschützt, von Session geladen) -->
             <div class="metadaten">
-                <div class="metadaten">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
-                        <input type="date" id="datum">
-                        <input type="text" id="pruefling" placeholder="Prüfling">
-                    </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
-                        <input type="text" id="pruefer" placeholder="Prüfer/-in">
-                        <input type="text" id="protokollant" placeholder="Protokollant/-in">
-                        <input type="text" id="fachpruefungsleitung" placeholder="Fachprüfungsleitung">
-                    </div>
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 8px; margin-bottom: 8px;">
+                    <input type="date" id="datum" disabled>
+                    <select id="prueflingSelect" onchange="prueflingWechseln()" disabled>
+                        <option value="">Lade Prüflinge...</option>
+                    </select>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                    <input type="text" id="pruefer" placeholder="Prüfer/-in" disabled>
+                    <input type="text" id="protokollant" placeholder="Protokollant/-in" disabled>
+                    <input type="text" id="fachpruefungsleitung" placeholder="Fachprüfungsleitung" disabled>
                 </div>
             </div>
             
@@ -436,7 +550,7 @@
                 </div>
                 
                 <div class="warnung" id="warnung">
-                    ⚠️ Bitte bewerten Sie alle 5 Kategorien für eine vollständige Notenberechnung
+                    ⚠️ Bitte bewerten Sie alle 3 Prüfungsteile für eine vollständige Notenberechnung
                 </div>
             </div>
             
@@ -448,109 +562,334 @@
                 <button class="btn btn-primary" onclick="exportPDF()">
                     📄 Als PDF exportieren
                 </button>
-                <button class="btn btn-danger" onclick="zuruecksetzen()">
-                    Zurücksetzen
-                </button>
             </div>
         </div>
         
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
-                <h2>Textbausteine</h2>
+                <h2>Prüfling & Textbausteine</h2>
+                
+                <!-- Prüfling-Auswahl mit + Button -->
+                <div class="pruefling-controls">
+                    <select class="pruefling-select" id="sidebarPrueflingSelect" onchange="prueflingWechselnAusSidebar()">
+                        <option value="">Lade Prüflinge...</option>
+                    </select>
+                    <button class="btn-add-pruefling" onclick="neuerPrueflingModal()">+ Neu</button>
+                </div>
+                
                 <select class="kategorie-select" id="kategorieSelect" onchange="ladeTextbausteine()">
                     <option value="">Kategorie wählen...</option>
                 </select>
             </div>
             
             <div class="textbausteine-liste" id="textbausteineContainer">
-                <p style="color: #95a5a6; text-align: center; margin-top: 50px; font-style: italic; font-size: 12px;">
-                    Bitte wählen Sie eine Kategorie aus
-                </p>
+                <div class="loading">Lade Daten</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal für neuen Prüfling -->
+    <div class="modal" id="neuPrueflingModal">
+        <div class="modal-content">
+            <h3>➕ Neuer Prüfling</h3>
+            <input type="text" id="neuPrueflingName" placeholder="Name des Prüflings">
+            <div class="modal-buttons">
+                <button style="background: #27ae60; color: white;" onclick="prueflingHinzufuegen()">Hinzufügen</button>
+                <button style="background: #95a5a6; color: white;" onclick="modalSchliessen()">Abbrechen</button>
             </div>
         </div>
     </div>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
-        // Auth Check
-        if (!localStorage.getItem('authToken')) {
-            window.location.href = 'index.html';
-        }
+        // ========== GLOBALE VARIABLEN ==========
+        let sessionData = null;
+        let prueflings = [];
+        let currentPrueflingId = null;
+        let currentPruefling = null;
         
-        function logout() {
-            localStorage.removeItem('authToken');
-            window.location.href = 'index.html';
-        }
+        const kategorien = [
+            "Teil 1: Technische Fertigkeiten (festgelegtes Programm)",
+            "Teil 2: Technische Fertigkeiten (offenes Programm)",
+            "Teil 3: Spielfähigkeit"
+        ];
         
-        // Textbausteine Daten
-        const textbausteine = {
-            "Technische Ausführung": {
-                "Sehr gut": ["Technisch richtige Ausführung aller Elemente","Schwierige Übungen mit dichter Folge mit Übergängen von technisch hohem Wert","Sicher Handhabung der Objekte","Sehr gute Körperhaltung","Harmonischer Bewegungsfluss"],
-                "Gut": ["Technisch richtige Ausführung der meisten Elemente","Übungen mittlerer Schwierigkeit in dichter Folge mit gelungenen Übergängen","Meist sichere Handhabung der Objekte","Gute Körperhaltung","Weitgehend harmonischer Bewegungsfluss"],
-                "Befriedigend": ["Wiederholt kleinere technische Fehler","Leichte Unsicherheiten im Umgang mit dem Objekt","Kleine Ungenauigkeiten in der Körperhaltung","Nicht immer harmonischer Bewegungsfluss"],
-                "Ausreichend": ["Wiederholt technische Fehler","Zu kleinräumige, teilweise unsichere Führung der Objekte","Körperhaltung oft fehlerhaft","Bewegungsfluss teilweise unterbrochen"],
-                "Mangelhaft": ["größere technische Fehler","Fehlerhafte und unsichere Handhabung der Objekte","Körperhaltung fehlerhaft und ohne Spannung","Bewegungsfluss häufig unterbrochen"],
-                "Ungenügend": ["Grobe technische Fehler in allen Elementen","Unsachgemäße Handhabung der Objekte","Fehlender Bewegungsfluss","Unzureichende Körperhaltung"]
-            },
-            "Beziehung zwischen Musik/Rhythmus und der Bewegung": {
-                "Sehr gut": ["Sehr hohe Übereinstimmung","Deutliche Umsetzung der Tempi, Rhythmen, Stimmungen","Sehr gelungene Interpretation musikalischer Spannungsbögen"],
-                "Gut": ["Meist gelungene Übereinstimmung","Tempi, Rhythmen, Stimmungen deutlich aufgegriffen"],
-                "Befriedigend": ["Teilweise Abweichung","Rhythmen eingehalten, Tempi usw. eher vernachlässigt"],
-                "Ausreichend": ["Häufig fehlende Beziehung","Unzureichende Umsetzung musikalischer Vorgaben"],
-                "Mangelhaft": ["Sehr geringe Übereinstimmung","Musikalische Vorgaben kaum beachtet"],
-                "Ungenügend": ["Keine erkennbare Beziehung zur Musik","Musikalische Vorgaben nicht umgesetzt"]
-            },
-            "Ausdrucksfähigkeit und Originalität": {
-                "Sehr gut": ["Sehr gute A. und Ausstrahlung","Hohes Maß an Darstellungskönnen","Sehr ideenreiche Übungsvariationen und originelle Übungsverbindungen","Sehr harmonisches Wechselspiel zw. Körper und Objekt"],
-                "Gut": ["Gute A. und Ausstrahlung","Abwechslungsreiche und originelle Verbindung der Übungen","Harmonisches Wechselspiel zw. Körper und Objekt"],
-                "Befriedigend": ["Wenig ausgeprägte A. und Ausstrahlung","Wenig Gestaltungselemente","Solide, wenig ideenreiche Präsentation"],
-                "Ausreichend": ["Wenig wahrnehmbarer Ausdruck in der Bewegung","Kaum Gestaltungselemente","Einfallslose Präsentation"],
-                "Mangelhaft": ["Kaum wahrnehmbare Ausstrahlung","Fehlende Gestaltungselemente","Keine erkennbare Originalität"],
-                "Ungenügend": ["Fehlende Ausstrahlung","Keine Gestaltungselemente","Keine Originalität"]
-            },
-            "Gestaltungsaufbau": {
-                "Sehr gut": ["Vielseitige horizontale Raumausnutzung","Sinnvoller Wechsel der vertikalen Ebenen","Dynamische Kontraste und originelle Gruppenformationen"],
-                "Gut": ["Gelungene Variation der Raumwege","Bewegungen auf verschiedenen vertikalen Ebenen","Einige dynamische Kontraste und ideenreiche Gruppenformationen"],
-                "Befriedigend": ["Nicht immer gelungene Wechsel in der Raumausnutzung","wenige dynamische Kontraste","wenige ideenreiche Gruppenformationen"],
-                "Ausreichend": ["Geringe Raumausnutzung","Kaum dynamische Kontraste","Einfache Gruppenformationen"],
-                "Mangelhaft": ["Sehr geringe Raumausnutzung","Keine dynamischen Kontraste","Keine kreativen Gruppenformationen"],
-                "Ungenügend": ["Fehlende Raumausnutzung","Keine Gestaltung erkennbar"]
-            },
-            "Zusammenwirken in der Gruppe": {
-                "Sehr gut": ["Sehr harmonisches Bild des Zusammenwirkens","Sehr präzise zeitliche Übereinstimmung der einzelnen Übungsteile","Sehr hohe Synchronität"],
-                "Gut": ["Überwiegend harmonisches Zusammenwirken","Überwiegend gelungene zeitliche Übereinstimmung der einzelnen Übungsteile","Erkennbare Synchronität"],
-                "Befriedigend": ["Einige Abweichungen in der Koordination gemeinsamer Übungsteile","Übungsfluss oder Bezug zueinander leicht gestört"],
-                "Ausreichend": ["Häufig keine Übereinstimmung mit der Gruppe","Deutliche Störungen im Zusammenwirken"],
-                "Mangelhaft": ["Sehr geringe Übereinstimmung in der Gruppe","Kaum erkennbares Zusammenwirken"],
-                "Ungenügend": ["Kein erkennbares Zusammenwirken","Keine Synchronität"]
-            }
+        // Sportart-Icons
+        const sportIcons = {
+            "Fußball": "⚽",
+            "Handball": "🤾",
+            "Basketball": "🏀",
+            "Volleyball": "🏐",
+            "Badminton": "🏸"
         };
-        
+                
         let ausgewaehlteBausteine = {};
         let bewertungen = {};
         
-        const kategorien = Object.keys(textbausteine);
-        const notenwerte = {"Sehr gut":1,"Gut":2,"Befriedigend":3,"Ausreichend":4,"Mangelhaft":5,"Ungenügend":6};
-        
-        // Initialisierung
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('datum').valueAsDate = new Date();
-            
-            const select = document.getElementById('kategorieSelect');
-            kategorien.forEach(kategorie => {
-                const option = document.createElement('option');
-                option.value = kategorie;
-                option.textContent = kategorie;
-                select.appendChild(option);
-                
-                ausgewaehlteBausteine[kategorie] = [];
-                bewertungen[kategorie] = [];
-            });
-            
-            aktualiereNotenberechnung();
+        kategorien.forEach(kategorie => {
+            ausgewaehlteBausteine[kategorie] = [];
+            bewertungen[kategorie] = [];
         });
         
+        // Textbausteine Daten
+        const textbausteine = {
+            "Teil 1: Technische Fertigkeiten (festgelegtes Programm)": {
+                "Sehr gut (15-13 Punkte)": [
+                    "Die technischen Elemente werden unter wechselnden Bedingungen sicher beherrscht",
+                    "Genaue Ausführung der Elemente",
+                    "Fließende Einfügung in komplexe Bewegungshandlungen",
+                    "Das taktische Verhalten passt sich unterschiedlichen Einflussgrößen jederzeit angemessen an",
+                    "Schnelle Anpassung an verschiedene Situationen"
+                ],
+                "Gut (12-10 Punkte)": [
+                    "Die technischen Elemente werden unter wechselnden Bedingungen gut beherrscht",
+                    "Zweckmäßige Ausführung der Elemente",
+                    "Insgesamt fließende Einfügung in komplexe Bewegungshandlungen",
+                    "Das taktische Verhalten passt sich unterschiedlichen Einflussgrößen in der Regel angemessen an",
+                    "Rasches Anpassen an verschiedene Situationen"
+                ],
+                "Befriedigend (9-7 Punkte)": [
+                    "Die technischen Elemente werden unter wechselnden Bedingungen beherrscht",
+                    "Zufriedenstellende Einfügung in komplexe Bewegungshandlungen",
+                    "Das taktische Verhalten passt sich unterschiedlichen Einflussgrößen meistens richtig an",
+                    "Zeitliche Verzögerungen bei der Anpassung",
+                    "Gelegentliche Verhaltenskorrekturen erforderlich"
+                ],
+                "Ausreichend (6-4 Punkte)": [
+                    "Die technischen Elemente werden auch unter einfachen Bedingungen nicht zufriedenstellend ausgeführt",
+                    "Kaum Einfügung in komplexe Bewegungshandlungen",
+                    "Das taktische Verhalten passt sich unterschiedlichen Einflussgrößen häufig nur zögernd an",
+                    "Gelegentlich verkehrtes Anpassen an Situationen",
+                    "Wenig ausgeprägte Fähigkeit zu schnellem Korrigieren fehlerhafter Verhaltensweisen"
+                ],
+                "Mangelhaft (3-1 Punkte)": [
+                    "Auch einfache technische Elemente werden überwiegend fehlerhaft ausgeführt",
+                    "Geringe Fähigkeit zur Koordinierung von Bewegungen",
+                    "Das taktische Verhalten passt sich unterschiedlichen Einflussgrößen nicht oder nur nach massiver Hilfe an"
+                ],
+                "Ungenügend (0 Punkte)": [
+                    "Die technischen Grundelemente werden weder einzeln noch in Verbindung beherrscht",
+                    "Kein Verständnis für richtiges taktisches Verhalten erkennbar",
+                    "Keine erkennbaren taktischen Maßnahmen"
+                ]
+            },
+            "Teil 2: Technische Fertigkeiten (offenes Programm)": {
+                "Sehr gut (15-13 Punkte)": [
+                    "Die technischen Elemente werden unter wechselnden Bedingungen sicher beherrscht",
+                    "Genaue Ausführung der Elemente",
+                    "Fließende Einfügung in komplexe Bewegungshandlungen",
+                    "Das taktische Verhalten passt sich unterschiedlichen Einflussgrößen jederzeit angemessen an",
+                    "Schnelle Anpassung an verschiedene Situationen"
+                ],
+                "Gut (12-10 Punkte)": [
+                    "Die technischen Elemente werden unter wechselnden Bedingungen gut beherrscht",
+                    "Zweckmäßige Ausführung der Elemente",
+                    "Insgesamt fließende Einfügung in komplexe Bewegungshandlungen",
+                    "Das taktische Verhalten passt sich unterschiedlichen Einflussgrößen in der Regel angemessen an",
+                    "Rasches Anpassen an verschiedene Situationen"
+                ],
+                "Befriedigend (9-7 Punkte)": [
+                    "Die technischen Elemente werden unter wechselnden Bedingungen beherrscht",
+                    "Zufriedenstellende Einfügung in komplexe Bewegungshandlungen",
+                    "Das taktische Verhalten passt sich unterschiedlichen Einflussgrößen meistens richtig an",
+                    "Zeitliche Verzögerungen bei der Anpassung",
+                    "Gelegentliche Verhaltenskorrekturen erforderlich"
+                ],
+                "Ausreichend (6-4 Punkte)": [
+                    "Die technischen Elemente werden auch unter einfachen Bedingungen nicht zufriedenstellend ausgeführt",
+                    "Kaum Einfügung in komplexe Bewegungshandlungen",
+                    "Das taktische Verhalten passt sich unterschiedlichen Einflussgrößen häufig nur zögernd an",
+                    "Gelegentlich verkehrtes Anpassen an Situationen",
+                    "Wenig ausgeprägte Fähigkeit zu schnellem Korrigieren fehlerhafter Verhaltensweisen"
+                ],
+                "Mangelhaft (3-1 Punkte)": [
+                    "Auch einfache technische Elemente werden überwiegend fehlerhaft ausgeführt",
+                    "Geringe Fähigkeit zur Koordinierung von Bewegungen",
+                    "Das taktische Verhalten passt sich unterschiedlichen Einflussgrößen nicht oder nur nach massiver Hilfe an"
+                ],
+                "Ungenügend (0 Punkte)": [
+                    "Die technischen Grundelemente werden weder einzeln noch in Verbindung beherrscht",
+                    "Kein Verständnis für richtiges taktisches Verhalten erkennbar",
+                    "Keine erkennbaren taktischen Maßnahmen"
+                ]
+            },
+            "Teil 3: Spielfähigkeit": {
+                "Sehr gut (15-13 Punkte)": [
+                    "Nahezu alle Spielhandlungen werden erfolgreich ausgeführt"
+                ],
+                "Gut (12-10 Punkte)": [
+                    "Die meisten Spielhandlungen werden erfolgreich ausgeführt"
+                ],
+                "Befriedigend (9-7 Punkte)": [
+                    "Die Anzahl der erfolgreichen Spielhandlungen ist größer als die der nicht erfolgreichen"
+                ],
+                "Ausreichend (6-4 Punkte)": [
+                    "Die Anzahl der erfolgreichen und nicht erfolgreichen Spielhandlungen ist in etwa gleich groß"
+                ],
+                "Mangelhaft (3-1 Punkte)": [
+                    "Die meisten Spielhandlungen werden nicht erfolgreich ausgeführt"
+                ],
+                "Ungenügend (0 Punkte)": [
+                    "Nahezu alle Spielhandlungen misslingen"
+                ]
+            }
+        };
+                
+        // ========== INITIALISIERUNG ==========
+        async function init() {
+            // Auth Check
+            if (!sessionStorage.getItem('authenticated')) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            const sessionId = sessionStorage.getItem('sessionId');
+            if (!sessionId) {
+                alert('Keine Session gefunden. Bitte starten Sie eine neue Prüfung.');
+                window.location.href = 'exam-selection.html';
+                return;
+            }
+            
+            await ladeSessionDaten(sessionId);
+        }
+        
+        async function ladeSessionDaten(sessionId) {
+            try {
+                const response = await fetch(`/api/sessions-get?sessionId=${sessionId}`);
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.error || 'Fehler beim Laden der Session');
+                }
+                
+                sessionData = data.session;
+                prueflings = data.prueflings;
+                
+                // Sportart anzeigen (falls vorhanden)
+if (sessionData.sport_type) {
+    document.getElementById('sportIcon').textContent = sportIcons[sessionData.sport_type] || '⚽';
+    document.getElementById('sportName').textContent = sessionData.sport_type;
+}
+                
+                // Metadaten anzeigen
+                document.getElementById('datum').value = sessionData.datum;
+                document.getElementById('pruefer').value = sessionData.pruefer;
+                document.getElementById('protokollant').value = sessionData.protokollant;
+                document.getElementById('fachpruefungsleitung').value = sessionData.fachpruefungsleitung;
+                
+                // Prüfling-Dropdowns füllen
+                aktualisierePrueflingDropdowns();
+                
+                // Ersten Prüfling auswählen
+                if (prueflings.length > 0) {
+                    currentPrueflingId = prueflings[0].id;
+                    await ladePrueflingDaten(currentPrueflingId);
+                }
+                
+                // Kategorien initialisieren
+                const kategorieSelect = document.getElementById('kategorieSelect');
+                kategorien.forEach(kategorie => {
+                    const option = document.createElement('option');
+                    option.value = kategorie;
+                    option.textContent = kategorie;
+                    kategorieSelect.appendChild(option);
+                });
+                
+                aktualisiereKategorieStatus();
+                
+            } catch (error) {
+                console.error('Fehler beim Laden:', error);
+                alert('Fehler beim Laden der Session-Daten: ' + error.message);
+            }
+        }
+        
+        function aktualisierePrueflingDropdowns() {
+            const mainSelect = document.getElementById('prueflingSelect');
+            const sidebarSelect = document.getElementById('sidebarPrueflingSelect');
+            
+            [mainSelect, sidebarSelect].forEach(select => {
+                select.innerHTML = '';
+                prueflings.forEach(p => {
+                    const option = document.createElement('option');
+                    option.value = p.id;
+                    option.textContent = p.name + (p.completed ? ' ✓' : '');
+                    select.appendChild(option);
+                });
+                select.disabled = false;
+                
+                if (currentPrueflingId) {
+                    select.value = currentPrueflingId;
+                }
+            });
+        }
+        
+        async function ladePrueflingDaten(prueflingId) {
+            // WICHTIG: Vor dem Wechsel die aktuellen Daten nochmal aus der DB holen
+            // um sicherzustellen, dass wir die neuesten Daten haben
+            try {
+                const response = await fetch(`/api/sessions-get?sessionId=${sessionData.id}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    prueflings = data.prueflings; // Aktualisiere die Prüflings-Liste
+                }
+            } catch (error) {
+                console.error('Fehler beim Aktualisieren der Prüflings-Daten:', error);
+            }
+            
+            currentPrueflingId = prueflingId;
+            currentPruefling = prueflings.find(p => p.id === prueflingId);
+            
+            if (!currentPruefling) {
+                console.error('Prüfling nicht gefunden:', prueflingId);
+                return;
+            }
+            
+            // Beide Dropdowns synchronisieren
+            document.getElementById('prueflingSelect').value = prueflingId;
+            document.getElementById('sidebarPrueflingSelect').value = prueflingId;
+            
+            // Bewertungen und Textbausteine laden
+            const selections = currentPruefling.selections || {};
+            
+            // WICHTIG: Arrays aus DB korrekt übernehmen
+            kategorien.forEach(kategorie => {
+                if (selections[kategorie] && Array.isArray(selections[kategorie])) {
+                    ausgewaehlteBausteine[kategorie] = [...selections[kategorie]]; // Kopie erstellen
+                    bewertungen[kategorie] = [...selections[kategorie]]; // Kopie erstellen
+                } else {
+                    ausgewaehlteBausteine[kategorie] = [];
+                    bewertungen[kategorie] = [];
+                }
+            });
+            
+            // AI-Text laden wenn vorhanden
+            if (currentPruefling.ai_text) {
+                document.getElementById('protokollInhalt').textContent = currentPruefling.ai_text;
+            } else {
+                aktualisiereProtokolltext();
+            }
+            
+            aktualisiereKategorieStatus();
+            ladeTextbausteine();
+        }
+        
+        function prueflingWechseln() {
+            const newId = document.getElementById('prueflingSelect').value;
+            if (newId && newId !== currentPrueflingId) {
+                ladePrueflingDaten(newId);
+            }
+        }
+        
+        function prueflingWechselnAusSidebar() {
+            const newId = document.getElementById('sidebarPrueflingSelect').value;
+            if (newId && newId !== currentPrueflingId) {
+                ladePrueflingDaten(newId);
+            }
+        }
+        
+        // ========== TEXTBAUSTEINE ==========
         function ladeTextbausteine() {
             const kategorie = document.getElementById('kategorieSelect').value;
             const container = document.getElementById('textbausteineContainer');
@@ -562,244 +901,198 @@
             
             container.innerHTML = '';
             
-            const bewertungsstufen = ["Sehr gut","Gut","Befriedigend","Ausreichend","Mangelhaft","Ungenügend"];
+            const stufen = Object.keys(textbausteine[kategorie]);
+            const bausteineInKategorie = textbausteine[kategorie];
             
-            bewertungsstufen.forEach(stufe => {
-                if (textbausteine[kategorie][stufe] && textbausteine[kategorie][stufe].length > 0) {
-                    const stufeDiv = document.createElement('div');
-                    stufeDiv.className = 'bewertungsstufe';
+            stufen.forEach(stufe => {
+                const stufenDiv = document.createElement('div');
+                stufenDiv.className = 'bewertungsstufe';
+                
+                const titel = document.createElement('div');
+                titel.className = 'bewertungsstufe-titel';
+                titel.textContent = stufe;
+                stufenDiv.appendChild(titel);
+                
+                const bausteine = bausteineInKategorie[stufe] || [];
+                bausteine.forEach(baustein => {
+                    const bausteinDiv = document.createElement('div');
+                    bausteinDiv.className = 'textbaustein';
+                    bausteinDiv.textContent = baustein;
                     
-                    const titelDiv = document.createElement('div');
-                    titelDiv.className = 'bewertungsstufe-titel';
-                    titelDiv.textContent = stufe;
-                    stufeDiv.appendChild(titelDiv);
+                    if (ausgewaehlteBausteine[kategorie].includes(baustein)) {
+                        bausteinDiv.classList.add('ausgewaehlt');
+                    }
                     
-                    textbausteine[kategorie][stufe].forEach(text => {
-                        const bausteinDiv = document.createElement('div');
-                        bausteinDiv.className = 'textbaustein';
-                        bausteinDiv.textContent = text;
-                        
-                        if (ausgewaehlteBausteine[kategorie].includes(text)) {
-                            bausteinDiv.classList.add('ausgewaehlt');
-                        }
-                        
-                        bausteinDiv.onclick = () => toggleTextbaustein(text, kategorie);
-                        stufeDiv.appendChild(bausteinDiv);
-                    });
-                    
-                    container.appendChild(stufeDiv);
-                }
+                    bausteinDiv.onclick = () => toggleTextbaustein(kategorie, baustein, stufe);
+                    stufenDiv.appendChild(bausteinDiv);
+                });
+                
+                container.appendChild(stufenDiv);
             });
         }
         
-        function toggleTextbaustein(text, kategorie) {
-            const istAusgewaehlt = ausgewaehlteBausteine[kategorie].includes(text);
+        function toggleTextbaustein(kategorie, baustein, stufe) {
+            const index = ausgewaehlteBausteine[kategorie].indexOf(baustein);
             
-            if (istAusgewaehlt) {
-                entferneBaustein(text, kategorie);
+            if (index > -1) {
+                ausgewaehlteBausteine[kategorie].splice(index, 1);
+                const bewIndex = bewertungen[kategorie].indexOf(baustein);
+                if (bewIndex > -1) bewertungen[kategorie].splice(bewIndex, 1);
             } else {
-                fuegeBausteinHinzu(text, kategorie);
+                ausgewaehlteBausteine[kategorie].push(baustein);
+                bewertungen[kategorie].push(baustein);
             }
             
             ladeTextbausteine();
+            aktualisiereProtokolltext();
+            aktualisiereKategorieStatus();
+            speicherePrueflingDaten();
         }
         
-        function fuegeBausteinHinzu(text, kategorie) {
-            let stufe = null;
-            for (const [s, texte] of Object.entries(textbausteine[kategorie])) {
-                if (texte.includes(text)) {
-                    stufe = s;
-                    break;
-                }
-            }
+        function aktualisiereProtokolltext() {
+            let text = '';
             
-            if (!stufe) return;
-            
-            ausgewaehlteBausteine[kategorie].push(text);
-            bewertungen[kategorie].push(notenwerte[stufe]);
-            
-            const protokoll = document.getElementById('protokollInhalt');
-            const aktuellerText = protokoll.textContent.trim();
-            
-            let neuerText = '';
-            if (!aktuellerText || aktuellerText === 'Hier erscheinen die ausgewählten Textbausteine...') {
-                neuerText = kategorie + ':\n' + text;
-            } else if (aktuellerText.includes(kategorie + ':')) {
-                neuerText = aktuellerText + ', ' + text;
-            } else {
-                neuerText = aktuellerText + '\n\n' + kategorie + ':\n' + text;
-            }
-            
-            protokoll.textContent = neuerText;
-            aktualiereNotenberechnung();
-        }
-        
-        function entferneBaustein(text, kategorie) {
-            let stufe = null;
-            for (const [s, texte] of Object.entries(textbausteine[kategorie])) {
-                if (texte.includes(text)) {
-                    stufe = s;
-                    break;
-                }
-            }
-            
-            if (!stufe) return;
-            
-            const index = ausgewaehlteBausteine[kategorie].indexOf(text);
-            if (index > -1) ausgewaehlteBausteine[kategorie].splice(index, 1);
-            
-            const notenwert = notenwerte[stufe];
-            const noteIndex = bewertungen[kategorie].indexOf(notenwert);
-            if (noteIndex > -1) bewertungen[kategorie].splice(noteIndex, 1);
-            
-            const protokoll = document.getElementById('protokollInhalt');
-            let neuerText = protokoll.textContent;
-            
-            if (neuerText.includes(', ' + text)) {
-                neuerText = neuerText.replace(', ' + text, '');
-            } else if (neuerText.includes(text + ', ')) {
-                neuerText = neuerText.replace(text + ', ', '');
-            } else if (neuerText.includes(kategorie + ':\n' + text)) {
-                const blocks = neuerText.split('\n\n').filter(block => {
-                    if (block.startsWith(kategorie + ':')) {
-                        const ohneKategorie = block.replace(kategorie + ':\n', '').trim();
-                        return ohneKategorie !== text && ohneKategorie !== '';
-                    }
-                    return true;
-                });
-                neuerText = blocks.join('\n\n');
-            }
-            
-            protokoll.textContent = neuerText.replace(/\n\n\n+/g, '\n\n').trim();
-            aktualiereNotenberechnung();
-        }
-        
-        function aktualiereNotenberechnung() {
-            const kategorieDurchschnitte = {};
-            let anzahlBewertet = 0;
-            
-            kategorien.forEach(kat => {
-                if (bewertungen[kat].length > 0) {
-                    const summe = bewertungen[kat].reduce((a,b) => a+b, 0);
-                    kategorieDurchschnitte[kat] = summe / bewertungen[kat].length;
-                    anzahlBewertet++;
-                } else {
-                    kategorieDurchschnitte[kat] = null;
+            kategorien.forEach(kategorie => {
+                if (ausgewaehlteBausteine[kategorie].length > 0) {
+                    text += kategorie + ':\n';
+                    ausgewaehlteBausteine[kategorie].forEach(baustein => {
+                        text += '• ' + baustein + '\n';
+                    });
+                    text += '\n';
                 }
             });
             
-            // Kategorie-Status aktualisieren (ausführlich)
-            const statusContainer = document.getElementById('kategorieStatus');
-            statusContainer.innerHTML = '';
+            document.getElementById('protokollInhalt').textContent = text.trim();
             
-            kategorien.forEach(kat => {
+            // KI-Button aktivieren wenn Text vorhanden
+            const kiButton = document.getElementById('kiButton');
+            kiButton.disabled = !text.trim();
+        }
+        
+        // ========== KATEGORIE-STATUS & NOTEN ==========
+         function aktualisiereKategorieStatus() {
+            const container = document.getElementById('kategorieStatus');
+            container.innerHTML = '';
+            
+            // Punktemapping für Sportspiele (0-15 Punkte direkt)
+            const punkteMapping = {
+                "Sehr gut (15-13 Punkte)": 14,
+                "Gut (12-10 Punkte)": 11,
+                "Befriedigend (9-7 Punkte)": 8,
+                "Ausreichend (6-4 Punkte)": 5,
+                "Mangelhaft (3-1 Punkte)": 2,
+                "Ungenügend (0 Punkte)": 0
+            };
+            
+            let teilPunkte = [];
+            
+            kategorien.forEach((kategorie, index) => {
                 const item = document.createElement('div');
                 item.className = 'kategorie-item';
                 
-                const icon = document.createElement('div');
-                icon.className = 'kategorie-icon';
+                const bewertet = bewertungen[kategorie].length > 0;
                 
-                const name = document.createElement('div');
-                name.className = 'kategorie-name';
-                name.textContent = kat;
-                
-                const note = document.createElement('div');
-                note.className = 'kategorie-note';
-                
-                if (kategorieDurchschnitte[kat] !== null) {
-                    icon.classList.add('bewertet');
-                    icon.textContent = '✓';
-                    note.classList.add('bewertet');
-                    note.textContent = kategorieDurchschnitte[kat].toFixed(1);
-                } else {
-                    icon.classList.add('nicht-bewertet');
-                    icon.textContent = '○';
-                    note.classList.add('nicht-bewertet');
-                    note.textContent = '-';
-                }
-                
-                item.appendChild(icon);
-                item.appendChild(name);
-                item.appendChild(note);
-                statusContainer.appendChild(item);
-            });
-            
-            // Warnung
-            const warnung = document.getElementById('warnung');
-            const kiButton = document.getElementById('kiButton');
-            
-            if (anzahlBewertet < 5) {
-                warnung.classList.add('aktiv');
-                kiButton.disabled = true;
-            } else {
-                warnung.classList.remove('aktiv');
-                kiButton.disabled = false;
-            }
-            
-            // Gesamtnote (kompakt)
-            if (anzahlBewertet === 5) {
-                const gesamtdurchschnitt = Object.values(kategorieDurchschnitte).reduce((a,b) => a+b, 0) / 5;
-                const schulnote = Math.round(gesamtdurchschnitt * 10) / 10;
-                
-                const oberstufenTabelle = {
-                    1.0:15, 1.1:15, 1.2:15, 1.3:14, 1.4:14, 1.5:14,
-                    1.6:13, 1.7:13, 1.8:13, 1.9:12, 2.0:12, 2.1:12,
-                    2.2:11, 2.3:11, 2.4:11, 2.5:10, 2.6:10, 2.7:10,
-                    2.8:9, 2.9:9, 3.0:9, 3.1:8, 3.2:8, 3.3:8,
-                    3.4:7, 3.5:7, 3.6:7, 3.7:6, 3.8:6, 3.9:6,
-                    4.0:5, 4.1:5, 4.2:5, 4.3:4, 4.4:4, 4.5:4,
-                    4.6:3, 4.7:3, 4.8:3, 4.9:2, 5.0:2, 5.1:2,
-                    5.2:1, 5.3:1, 5.4:1, 5.5:1, 5.6:1, 5.7:1,
-                    5.8:0, 5.9:0, 6.0:0
-                };
-                
-                let oberstufenpunkte = 0;
-                let kleinsterAbstand = 999;
-                
-                for (const [note, punkte] of Object.entries(oberstufenTabelle)) {
-                    const abstand = Math.abs(parseFloat(note) - schulnote);
-                    if (abstand < kleinsterAbstand) {
-                        kleinsterAbstand = abstand;
-                        oberstufenpunkte = punkte;
+                let punkte = '-';
+                if (bewertet) {
+                    const stufen = Object.keys(textbausteine[kategorie]);
+                    let punkteSumme = 0;
+                    let bausteinAnzahl = 0;
+                    
+                    for (let stufe of stufen) {
+                        const bausteineInStufe = textbausteine[kategorie][stufe] || [];
+                        const ausgewaehltAusDieserStufe = bewertungen[kategorie].filter(b => 
+                            bausteineInStufe.includes(b)
+                        ).length;
+                        
+                        if (ausgewaehltAusDieserStufe > 0) {
+                            punkteSumme += punkteMapping[stufe] * ausgewaehltAusDieserStufe;
+                            bausteinAnzahl += ausgewaehltAusDieserStufe;
+                        }
+                    }
+                    
+                    if (bausteinAnzahl > 0) {
+                        punkte = Math.round((punkteSumme / bausteinAnzahl) * 10) / 10;
+                        teilPunkte[index] = punkte;
                     }
                 }
                 
-                document.getElementById('schulnote').textContent = schulnote.toFixed(1);
-                document.getElementById('oberstufenpunkte').textContent = oberstufenpunkte;
+                item.innerHTML = `
+                    <div class="kategorie-icon ${bewertet ? 'bewertet' : 'nicht-bewertet'}">
+                        ${bewertet ? '✓' : '○'}
+                    </div>
+                    <div class="kategorie-name">${kategorie}</div>
+                    <div class="kategorie-note ${bewertet ? 'bewertet' : 'nicht-bewertet'}">${punkte}</div>
+                `;
                 
-                const schulnoteEl = document.getElementById('schulnote');
-                const oberstufenEl = document.getElementById('oberstufenpunkte');
-                
-                schulnoteEl.className = 'noten-zahl';
-                oberstufenEl.className = 'noten-zahl';
-                
-                if (schulnote <= 1.5) {
-                    schulnoteEl.classList.add('excellent');
-                    oberstufenEl.classList.add('excellent');
-                } else if (schulnote <= 2.5) {
-                    schulnoteEl.classList.add('good');
-                    oberstufenEl.classList.add('good');
-                } else if (schulnote <= 3.5) {
-                    schulnoteEl.classList.add('satisfactory');
-                    oberstufenEl.classList.add('satisfactory');
-                } else if (schulnote <= 4.5) {
-                    schulnoteEl.classList.add('sufficient');
-                    oberstufenEl.classList.add('sufficient');
-                } else if (schulnote <= 5.5) {
-                    schulnoteEl.classList.add('poor');
-                    oberstufenEl.classList.add('poor');
-                } else {
-                    schulnoteEl.classList.add('failing');
-                    oberstufenEl.classList.add('failing');
-                }
+                container.appendChild(item);
+            });
+            
+            // Gewichtete Endnote: Teil 1 (30%) + Teil 2 (30%) + Teil 3 (40%)
+            if (teilPunkte.length === 3 && teilPunkte.every(p => p !== undefined)) {
+                const gewichteteNote = (teilPunkte[0] * 0.3) + (teilPunkte[1] * 0.3) + (teilPunkte[2] * 0.4);
+                aktualisiereNotenberechnung(gewichteteNote);
             } else {
-                document.getElementById('schulnote').textContent = '-';
-                document.getElementById('oberstufenpunkte').textContent = '-';
-                document.getElementById('schulnote').className = 'noten-zahl none';
-                document.getElementById('oberstufenpunkte').className = 'noten-zahl none';
+                aktualisiereNotenberechnung(null);
+            }
+        }
+                
+                function aktualisiereNotenberechnung(endpunkte) {
+            const schulnoteElement = document.getElementById('schulnote');
+            const oberstufenpunkteElement = document.getElementById('oberstufenpunkte');
+            const warnung = document.getElementById('warnung');
+            
+            // Schulnote-Element ausblenden (wird bei Sportspiele nicht gebraucht)
+            schulnoteElement.parentElement.style.display = 'none';
+            document.querySelector('.noten-werte > span').style.display = 'none';
+            
+            if (endpunkte === null) {
+                oberstufenpunkteElement.textContent = '-';
+                oberstufenpunkteElement.className = 'noten-zahl none';
+                warnung.classList.add('aktiv');
+                return;
+            }
+            
+            warnung.classList.remove('aktiv');
+            
+            const gerundet = Math.round(endpunkte * 10) / 10;
+            oberstufenpunkteElement.textContent = gerundet.toFixed(1);
+            
+            const colorClass = 
+                gerundet >= 13 ? 'excellent' :
+                gerundet >= 10 ? 'good' :
+                gerundet >= 7 ? 'satisfactory' :
+                gerundet >= 4 ? 'sufficient' :
+                gerundet >= 1 ? 'poor' : 'failing';
+            
+            oberstufenpunkteElement.className = 'noten-zahl ' + colorClass;
+        }
+
+        
+        // ========== SPEICHERN IN SUPABASE ==========
+        async function speicherePrueflingDaten() {
+            if (!currentPrueflingId) return;
+            
+            const selections = {};
+            kategorien.forEach(kategorie => {
+                selections[kategorie] = ausgewaehlteBausteine[kategorie];
+            });
+            
+            try {
+                await fetch('/api/prueflings/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prueflingId: currentPrueflingId,
+                        selections: selections,
+                        aiText: null // Wird erst nach KI-Generierung gespeichert
+                    })
+                });
+            } catch (error) {
+                console.error('Auto-Save Fehler:', error);
             }
         }
         
+        // ========== KI-GENERIERUNG ==========
         async function generiereFliesstextMitKI() {
             const protokollText = document.getElementById('protokollInhalt').textContent.trim();
             
@@ -818,7 +1111,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + localStorage.getItem('authToken')
+                        'Authorization': 'Bearer ' + sessionStorage.getItem('authenticated')
                     },
                     body: JSON.stringify({ protokollText })
                 });
@@ -827,6 +1120,16 @@
                 
                 if (response.ok && data.success) {
                     document.getElementById('protokollInhalt').textContent = data.text;
+                    
+                    // AI-Text in DB speichern
+                    await fetch('/api/prueflings/update', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            prueflingId: currentPrueflingId,
+                            aiText: data.text
+                        })
+                    });
                 } else {
                     alert('Fehler: ' + (data.error || 'Unbekannter Fehler'));
                 }
@@ -839,10 +1142,70 @@
             }
         }
         
+        // ========== NEUER PRÜFLING ==========
+        function neuerPrueflingModal() {
+            document.getElementById('neuPrueflingModal').classList.add('active');
+            document.getElementById('neuPrueflingName').focus();
+        }
+        
+        function modalSchliessen() {
+            document.getElementById('neuPrueflingModal').classList.remove('active');
+            document.getElementById('neuPrueflingName').value = '';
+        }
+        
+        async function prueflingHinzufuegen() {
+            const name = document.getElementById('neuPrueflingName').value.trim();
+            
+            if (!name) {
+                alert('Bitte Namen eingeben');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/prueflings/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId: sessionData.id,
+                        name: name
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Neuen Prüfling zur Liste hinzufügen
+                    prueflings.push(data.pruefling);
+                    aktualisierePrueflingDropdowns();
+                    modalSchliessen();
+                    
+                    // Zum neuen Prüfling wechseln
+                    await ladePrueflingDaten(data.pruefling.id);
+                } else {
+                    alert('Fehler: ' + data.error);
+                }
+            } catch (error) {
+                alert('Fehler beim Hinzufügen: ' + error.message);
+            }
+        }
+        
+        // Enter-Taste im Modal
+        document.addEventListener('DOMContentLoaded', () => {
+            const input = document.getElementById('neuPrueflingName');
+            if (input) {
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        prueflingHinzufuegen();
+                    }
+                });
+            }
+        });
+        
+        // ========== PDF EXPORT ==========
         function exportPDF() {
             const metadaten = {
                 datum: document.getElementById('datum').value,
-                pruefling: document.getElementById('pruefling').value,
+                pruefling: currentPruefling ? currentPruefling.name : '',
                 pruefer: document.getElementById('pruefer').value,
                 protokollant: document.getElementById('protokollant').value,
                 fachpruefungsleitung: document.getElementById('fachpruefungsleitung').value
@@ -867,7 +1230,8 @@
                 // Titel
                 doc.setFontSize(18);
                 doc.setFont(undefined, 'bold');
-                doc.text('Prüfungsprotokoll', margin, y);
+                const sportartTitel = sessionData.sport_type || 'Sportspiele';
+                doc.text('Prüfungsprotokoll - ' + sportartTitel, margin, y);
                 y += lineHeight * 2;
                 
                 // Trennlinie
@@ -966,9 +1330,10 @@
                 doc.line(rightCol, yUnterschrift + 20, rightCol + colWidth, yUnterschrift + 20);
                 
                 // Dateiname
-                const filename = metadaten.pruefling 
-                    ? 'Protokoll_' + metadaten.pruefling.replace(/[^a-zA-Z0-9_-]/g, '_') + '.pdf'
-                    : 'Pruefungsprotokoll.pdf';
+                const sportart = sessionData.sport_type ? sessionData.sport_type.replace(/[^a-zA-Z0-9_-]/g, '_') : 'Sportspiele';
+const filename = metadaten.pruefling 
+    ? 'Protokoll_' + sportart + '_' + metadaten.pruefling.replace(/[^a-zA-Z0-9_-]/g, '_') + '.pdf'
+    : 'Pruefungsprotokoll_' + sportart + '.pdf';
                 
                 doc.save(filename);
                 
@@ -978,24 +1343,53 @@
             }
         }
         
-        function zuruecksetzen() {
-            if (confirm('Möchten Sie wirklich alle Eingaben zurücksetzen?')) {
-                document.getElementById('pruefling').value = '';
-                document.getElementById('pruefer').value = '';
-                document.getElementById('protokollant').value = '';
-                document.getElementById('fachpruefungsleitung').value = '';
-                document.getElementById('protokollInhalt').textContent = '';
-                document.getElementById('datum').valueAsDate = new Date();
-                
-                kategorien.forEach(kategorie => {
-                    ausgewaehlteBausteine[kategorie] = [];
-                    bewertungen[kategorie] = [];
-                });
-                
-                aktualiereNotenberechnung();
-                ladeTextbausteine();
+        // ========== NAVIGATION ==========
+        function zurueckZurAuswahl() {
+            if (confirm('Möchten Sie zur Prüfungsauswahl zurückkehren?\n\nAlle Bewertungen sind bereits gespeichert.')) {
+                window.location.href = 'exam-selection.html';
             }
         }
+        
+        // ========== SESSION BEENDEN ==========
+        async function sessionBeenden() {
+            if (!confirm('Möchten Sie die Prüfung wirklich beenden?\n\nAlle Daten bleiben gespeichert und können später im Archiv eingesehen werden.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/sessions-complete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId: sessionData.id
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // SessionID aus Browser löschen
+                    sessionStorage.removeItem('sessionId');
+                    // Zurück zur Prüfungsauswahl
+                    window.location.href = 'exam-selection.html';
+                } else {
+                    alert('Fehler beim Beenden: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Fehler beim Beenden:', error);
+                alert('Fehler beim Beenden der Prüfung: ' + error.message);
+            }
+        }
+        
+        function logout() {
+            sessionStorage.removeItem('authenticated');
+            sessionStorage.removeItem('sessionId');
+            sessionStorage.removeItem('examType');
+            window.location.href = 'index.html';
+        }
+        
+        // ========== START ==========
+        init();
     </script>
 </body>
 </html>

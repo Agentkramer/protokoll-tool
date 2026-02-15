@@ -7,7 +7,7 @@ async function handler(req, res) {
   }
 
   try {
-    const { exam_type, datum, pruefer, protokollant, fachpruefungsleitung, prueflings } = req.body;
+    const { exam_type, sport_type, datum, pruefer, protokollant, fachpruefungsleitung, prueflings } = req.body;
 
     // Validierung
     if (!exam_type || !datum || !pruefer || !protokollant || !fachpruefungsleitung || !prueflings || prueflings.length === 0) {
@@ -19,6 +19,7 @@ async function handler(req, res) {
       .from('exam_sessions')
       .insert({
         exam_type,
+        sport_type: sport_type || null,  // NEU
         datum,
         pruefer,
         protokollant,

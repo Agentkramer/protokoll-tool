@@ -80,6 +80,20 @@
             font-size: 14px;
         }
         
+        .form-group select {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+}
+
+.form-group select:focus {
+    outline: none;
+    border-color: #3498db;
+}
+        
         .csv-upload {
             display: block;
             border: 2px dashed #4facfe;
@@ -266,23 +280,40 @@
         <div class="success-message" id="successMessage"></div>
         
         <!-- Metadaten -->
+<!-- Metadaten -->
         <div class="section">
             <h2>Prüfungsinformationen</h2>
-            <div class="form-grid">
+            
+            <!-- Erste Zeile: Datum + optional Sportart + Prüfer -->
+            <div class="form-grid" id="metadatenZeile1">
                 <div class="form-group">
                     <label for="datum">Datum</label>
                     <input type="date" id="datum" required>
+                </div>
+                <div class="form-group" id="sportartGroup" style="visibility: hidden; position: absolute;">
+                    <label for="sportart">Sportart</label>
+                    <select id="sportart">
+                        <option value="Fußball">⚽ Fußball</option>
+                        <option value="Handball">🤾 Handball</option>
+                        <option value="Basketball">🏀 Basketball</option>
+                        <option value="Volleyball">🏐 Volleyball</option>
+                        <option value="Badminton">🏸 Badminton</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="pruefer">Prüfer/-in</label>
                     <input type="text" id="pruefer" placeholder="z.B. Dr. Schmidt" required>
                 </div>
+            </div>
+            
+            <!-- Zweite Zeile: Protokollant + Fachprüfungsleitung -->
+            <div class="form-grid">
                 <div class="form-group">
                     <label for="protokollant">Protokollant/-in</label>
-                    <input type="text" id="protokollant" placeholder="z.B. Müller" required>
+                    <input type="text" id="protokollant" placeholder="z.B. Anna Müller" required>
                 </div>
                 <div class="form-group">
-                    <label for="fachpruefungsleitung">Fachprüfungsleiter/-in</label>
+                    <label for="fachpruefungsleitung">Fachprüfungsleitung</label>
                     <input type="text" id="fachpruefungsleitung" placeholder="z.B. Prof. Weber" required>
                 </div>
             </div>
@@ -365,6 +396,17 @@
         const badge = document.getElementById('examBadge');
         badge.textContent = examType === 'tanz' ? '💃 Tanz' : '⚽ Sportspiele';
         badge.classList.add(examType);
+        
+       // Sportart-Dropdown nur bei Sportspiele anzeigen
+if (examType === 'sportspiele') {
+    document.getElementById('sportartGroup').style.visibility = 'visible';
+    document.getElementById('sportartGroup').style.position = 'static';
+    // Grid auf 3 Spalten setzen
+    document.getElementById('metadatenZeile1').style.gridTemplateColumns = 'repeat(3, 1fr)';
+} else {
+    // Bei Tanz: 2 Spalten
+    document.getElementById('metadatenZeile1').style.gridTemplateColumns = 'repeat(2, 1fr)';
+}
         
         // Heutiges Datum vorausfüllen
         document.getElementById('datum').valueAsDate = new Date();
@@ -494,6 +536,11 @@
                 return;
             }
             
+            // Sportart auslesen (nur bei Sportspiele)
+            const sportart = examType === 'sportspiele' 
+                ? document.getElementById('sportart').value 
+                : null;
+            
             // Session in DB erstellen
             try {
                 const response = await fetch('/api/sessions-create', {
@@ -501,6 +548,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         exam_type: examType,
+                        sport_type: sportart,
                         datum,
                         pruefer,
                         protokollant,
