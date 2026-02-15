@@ -361,6 +361,13 @@
             cursor: not-allowed;
         }
         
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover { background: #2980b9; }
+        
         .btn-danger {
             background: #e74c3c;
             color: white;
@@ -434,6 +441,9 @@
                 <button class="btn btn-ki" id="kiButton" onclick="generiereFliesstextMitKI()" disabled>
                     ✨ KI-Fließtext generieren
                 </button>
+                <button class="btn btn-primary" onclick="exportPDF()">
+                    📄 Als PDF exportieren
+                </button>
                 <button class="btn btn-danger" onclick="zuruecksetzen()">
                     Zurücksetzen
                 </button>
@@ -457,6 +467,7 @@
         </div>
     </div>
     
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
         // Auth Check
         if (!localStorage.getItem('authToken')) {
@@ -821,6 +832,145 @@
             } finally {
                 kiButton.disabled = false;
                 kiButton.innerHTML = originalText;
+            }
+        }
+        
+        function exportPDF() {
+            const metadaten = {
+                datum: document.getElementById('datum').value,
+                pruefling: document.getElementById('pruefling').value,
+                pruefer: document.getElementById('pruefer').value,
+                protokollant: document.getElementById('protokollant').value,
+                fachpruefungsleitung: document.getElementById('fachpruefungsleitung').value
+            };
+            
+            const protokollText = document.getElementById('protokollInhalt').textContent.trim();
+            
+            if (!protokollText || protokollText === 'Hier erscheinen die ausgewählten Textbausteine...') {
+                alert('Bitte erstellen Sie zuerst ein Protokoll!');
+                return;
+            }
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                let y = 20;
+                const lineHeight = 7;
+                const margin = 20;
+                const maxWidth = 170;
+                
+                // Titel
+                doc.setFontSize(18);
+                doc.setFont(undefined, 'bold');
+                doc.text('Prüfungsprotokoll', margin, y);
+                y += lineHeight * 2;
+                
+                // Trennlinie
+                doc.setLineWidth(0.5);
+                doc.line(margin, y, margin + maxWidth, y);
+                y += lineHeight * 1.5;
+                
+                // Metadaten - 2-spaltig
+                doc.setFontSize(11);
+                doc.setFont(undefined, 'normal');
+                
+                const leftCol = margin;
+                const rightCol = margin + 90;
+                let yLeft = y;
+                let yRight = y;
+                
+                // Linke Spalte: Datum & Prüfling
+                if (metadaten.datum) {
+                    const datumFormatiert = new Date(metadaten.datum).toLocaleDateString('de-DE');
+                    doc.text('Datum: ' + datumFormatiert, leftCol, yLeft);
+                    yLeft += lineHeight;
+                }
+                if (metadaten.pruefling) {
+                    doc.text('Prüfling: ' + metadaten.pruefling, leftCol, yLeft);
+                    yLeft += lineHeight;
+                }
+                
+                // Rechte Spalte: Prüfer, Protokollant, FPL
+                if (metadaten.pruefer) {
+                    doc.text('Prüfer/-in: ' + metadaten.pruefer, rightCol, yRight);
+                    yRight += lineHeight;
+                }
+                if (metadaten.protokollant) {
+                    doc.text('Protokollant/-in: ' + metadaten.protokollant, rightCol, yRight);
+                    yRight += lineHeight;
+                }
+                if (metadaten.fachpruefungsleitung) {
+                    doc.text('Fachprüfungsleitung: ' + metadaten.fachpruefungsleitung, rightCol, yRight);
+                    yRight += lineHeight;
+                }
+                
+                // y Position auf die längere Spalte setzen
+                y = Math.max(yLeft, yRight) + lineHeight;
+                
+                // Trennlinie
+                doc.setLineWidth(0.5);
+                doc.line(margin, y, margin + maxWidth, y);
+                y += lineHeight * 1.5;
+                
+                // Protokolltext
+                doc.setFontSize(10);
+                doc.setFont(undefined, 'normal');
+                
+                const lines = doc.splitTextToSize(protokollText, maxWidth);
+                
+                for (let i = 0; i < lines.length; i++) {
+                    if (y > 270) {
+                        doc.addPage();
+                        y = 20;
+                    }
+                    doc.text(lines[i], margin, y);
+                    y += lineHeight;
+                }
+                
+                // Neue Seite für Bewertung und Unterschrift wenn nötig
+                if (y > 220) {
+                    doc.addPage();
+                    y = 20;
+                } else {
+                    y += lineHeight * 2;
+                }
+                
+                // Trennlinie
+                doc.setLineWidth(0.5);
+                doc.line(margin, y, margin + maxWidth, y);
+                y += lineHeight * 2;
+                
+                // Bewertung und Unterschrift - 2-spaltig
+                doc.setFontSize(11);
+                doc.setFont(undefined, 'bold');
+                
+                const colWidth = 80;
+                
+                // Linke Spalte: Bewertung
+                doc.text('Bewertung:', leftCol, y);
+                let yBewertung = y + lineHeight;
+                doc.setFont(undefined, 'normal');
+                doc.setLineWidth(0.3);
+                doc.rect(leftCol, yBewertung, colWidth, 25);
+                
+                // Rechte Spalte: Unterschrift
+                doc.setFont(undefined, 'bold');
+                doc.text('Unterschrift Protokollant/-in:', rightCol, y);
+                let yUnterschrift = y + lineHeight * 1.5;
+                doc.setLineWidth(0.3);
+                doc.line(rightCol, yUnterschrift + 20, rightCol + colWidth, yUnterschrift + 20);
+                
+                // Dateiname
+                const filename = metadaten.pruefling 
+                    ? 'Protokoll_' + metadaten.pruefling.replace(/[^a-zA-Z0-9_-]/g, '_') + '.pdf'
+                    : 'Pruefungsprotokoll.pdf';
+                
+                doc.save(filename);
+                
+            } catch (error) {
+                console.error('PDF-Export-Fehler:', error);
+                alert('Fehler beim PDF-Export: ' + error.message);
             }
         }
         
