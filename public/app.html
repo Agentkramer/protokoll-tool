@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tanz-Protokoll Tool</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 12px 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 { font-size: 20px; }
+        
+        .logout-btn {
+            padding: 6px 12px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .protokoll-bereich {
+            flex: 2;
+            background: white;
+            margin: 20px;
+            margin-right: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        /* Metadaten - kompakt */
+        .metadaten {
+            padding: 12px;
+            border-bottom: 2px solid #ecf0f1;
+            background: #fafafa;
+        }
+        
+        .metadaten-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+        
+        .metadaten input {
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .metadaten input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        /* Protokolltext - maximaler Platz */
+        .protokoll-text {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .protokoll-text h2 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        #protokollInhalt {
+            flex: 1;
+            padding: 12px;
+            border: 2px dashed #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            line-height: 1.7;
+            background: #fafafa;
+            white-space: pre-wrap;
+            overflow-y: auto;
+        }
+        
+        #protokollInhalt:empty::before {
+            content: 'Hier erscheinen die ausgewählten Textbausteine...';
+            color: #95a5a6;
+            font-style: italic;
+        }
+        
+        #protokollInhalt:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        /* Kategorie-Status - ausführlich */
+        .kategorie-status-bereich {
+            padding: 12px;
+            border-top: 2px solid #ecf0f1;
+            background: #fafafa;
+        }
+        
+        .kategorie-status-titel {
+            font-size: 12px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .kategorie-liste {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        
+        .kategorie-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #ecf0f1;
+        }
+        
+        .kategorie-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+        
+        .kategorie-icon.bewertet {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .kategorie-icon.nicht-bewertet {
+            background: #ecf0f1;
+            color: #95a5a6;
+        }
+        
+        .kategorie-name {
+            font-size: 11px;
+            color: #2c3e50;
+            flex: 1;
+        }
+        
+        .kategorie-note {
+            font-size: 11px;
+            font-weight: 600;
+        }
+        
+        .kategorie-note.bewertet {
+            color: #27ae60;
+        }
+        
+        .kategorie-note.nicht-bewertet {
+            color: #95a5a6;
+        }
+        
+        /* Notenberechnung - kompakt */
+        .noten-bereich-kompakt {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            background: white;
+            border-radius: 4px;
+        }
+        
+        .noten-label-klein {
+            font-size: 11px;
+            font-weight: 600;
+            color: #7f8c8d;
+        }
+        
+        .noten-werte {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .noten-box {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+        
+        .noten-zahl {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .noten-einheit {
+            font-size: 10px;
+            color: #7f8c8d;
+        }
+        
+        .noten-zahl.excellent { color: #27ae60; }
+        .noten-zahl.good { color: #16a085; }
+        .noten-zahl.satisfactory { color: #f39c12; }
+        .noten-zahl.sufficient { color: #e67e22; }
+        .noten-zahl.poor { color: #e74c3c; }
+        .noten-zahl.failing { color: #c0392b; }
+        .noten-zahl.none { color: #bdc3c7; }
+        
+        .warnung {
+            margin-top: 8px;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            display: none;
+        }
+        
+        .warnung.aktiv { display: block; }
+        
+        /* Sidebar */
+        .sidebar {
+            flex: 1;
+            background: white;
+            margin: 20px;
+            margin-left: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .sidebar-header {
+            padding: 15px;
+            border-bottom: 2px solid #ecf0f1;
+            background: #34495e;
+            color: white;
+        }
+        
+        .sidebar-header h2 {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .kategorie-select {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid #fff;
+            border-radius: 4px;
+            font-size: 12px;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .textbausteine-liste {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+        
+        .bewertungsstufe {
+            margin-bottom: 15px;
+        }
+        
+        .bewertungsstufe-titel {
+            font-size: 12px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            padding: 6px 8px;
+            background: #ecf0f1;
+            border-radius: 4px;
+        }
+        
+        .textbaustein {
+            padding: 8px;
+            margin-bottom: 6px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        
+        .textbaustein:hover {
+            background: #e3f2fd;
+            border-color: #3498db;
+            transform: translateX(3px);
+        }
+        
+        .textbaustein.ausgewaehlt {
+            background: #c8e6c9;
+            border-color: #4caf50;
+            font-weight: 500;
+        }
+        
+        .textbaustein.ausgewaehlt:hover {
+            background: #ffcdd2;
+            border-color: #f44336;
+        }
+        
+        /* Actions */
+        .actions {
+            padding: 12px;
+            border-top: 2px solid #ecf0f1;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-ki {
+            background: #9b59b6;
+            color: white;
+        }
+        
+        .btn-ki:hover { background: #8e44ad; }
+        .btn-ki:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-danger:hover { background: #c0392b; }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb {
+            background: #bdc3c7;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover { background: #95a5a6; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎭 Tanz-Protokoll Tool</h1>
+        <button class="logout-btn" onclick="logout()">Abmelden</button>
+    </div>
+    
+    <div class="main-container">
+        <div class="protokoll-bereich">
+            <!-- Metadaten kompakt -->
+            <div class="metadaten">
+                <div class="metadaten-grid">
+                    <input type="text" id="pruefling" placeholder="Prüfling">
+                    <input type="date" id="datum">
+                    <input type="text" id="pruefer" placeholder="Prüfer/-in">
+                    <input type="text" id="protokollant" placeholder="Protokollant/-in">
+                    <input type="text" id="fachpruefungsleitung" placeholder="Fachprüfungsleitung" style="grid-column: span 2;">
+                </div>
+            </div>
+            
+            <!-- Protokolltext - maximaler Platz -->
+            <div class="protokoll-text">
+                <h2>Protokoll</h2>
+                <div id="protokollInhalt" contenteditable="true"></div>
+            </div>
+            
+            <!-- Kategorie-Status - ausführlich -->
+            <div class="kategorie-status-bereich">
+                <div class="kategorie-status-titel">Bewertungs-Status:</div>
+                <div class="kategorie-liste" id="kategorieStatus"></div>
+                
+                <!-- Notenberechnung kompakt -->
+                <div class="noten-bereich-kompakt">
+                    <span class="noten-label-klein">Empfehlung:</span>
+                    <div class="noten-werte">
+                        <div class="noten-box">
+                            <span class="noten-zahl none" id="schulnote">-</span>
+                            <span class="noten-einheit">Note</span>
+                        </div>
+                        <span style="color: #bdc3c7;">|</span>
+                        <div class="noten-box">
+                            <span class="noten-zahl none" id="oberstufenpunkte">-</span>
+                            <span class="noten-einheit">Pkt</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="warnung" id="warnung">
+                    ⚠️ Bitte bewerten Sie alle 5 Kategorien für eine vollständige Notenberechnung
+                </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="actions">
+                <button class="btn btn-ki" id="kiButton" onclick="generiereFliesstextMitKI()" disabled>
+                    ✨ KI-Fließtext generieren
+                </button>
+                <button class="btn btn-danger" onclick="zuruecksetzen()">
+                    Zurücksetzen
+                </button>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>Textbausteine</h2>
+                <select class="kategorie-select" id="kategorieSelect" onchange="ladeTextbausteine()">
+                    <option value="">Kategorie wählen...</option>
+                </select>
+            </div>
+            
+            <div class="textbausteine-liste" id="textbausteineContainer">
+                <p style="color: #95a5a6; text-align: center; margin-top: 50px; font-style: italic; font-size: 12px;">
+                    Bitte wählen Sie eine Kategorie aus
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Auth Check
+        if (!localStorage.getItem('authToken')) {
+            window.location.href = 'index.html';
+        }
+        
+        function logout() {
+            localStorage.removeItem('authToken');
+            window.location.href = 'index.html';
+        }
+        
+        // Textbausteine Daten
+        const textbausteine = {
+            "Technische Ausführung": {
+                "Sehr gut": ["Technisch richtige Ausführung aller Elemente","Schwierige Übungen mit dichter Folge mit Übergängen von technisch hohem Wert","Sicher Handhabung der Objekte","Sehr gute Körperhaltung","Harmonischer Bewegungsfluss"],
+                "Gut": ["Technisch richtige Ausführung der meisten Elemente","Übungen mittlerer Schwierigkeit in dichter Folge mit gelungenen Übergängen","Meist sichere Handhabung der Objekte","Gute Körperhaltung","Weitgehend harmonischer Bewegungsfluss"],
+                "Befriedigend": ["Wiederholt kleinere technische Fehler","Leichte Unsicherheiten im Umgang mit dem Objekt","Kleine Ungenauigkeiten in der Körperhaltung","Nicht immer harmonischer Bewegungsfluss"],
+                "Ausreichend": ["Wiederholt technische Fehler","Zu kleinräumige, teilweise unsichere Führung der Objekte","Körperhaltung oft fehlerhaft","Bewegungsfluss teilweise unterbrochen"],
+                "Mangelhaft": ["größere technische Fehler","Fehlerhafte und unsichere Handhabung der Objekte","Körperhaltung fehlerhaft und ohne Spannung","Bewegungsfluss häufig unterbrochen"],
+                "Ungenügend": ["Grobe technische Fehler in allen Elementen","Unsachgemäße Handhabung der Objekte","Fehlender Bewegungsfluss","Unzureichende Körperhaltung"]
+            },
+            "Beziehung zwischen Musik/Rhythmus und der Bewegung": {
+                "Sehr gut": ["Sehr hohe Übereinstimmung","Deutliche Umsetzung der Tempi, Rhythmen, Stimmungen","Sehr gelungene Interpretation musikalischer Spannungsbögen"],
+                "Gut": ["Meist gelungene Übereinstimmung","Tempi, Rhythmen, Stimmungen deutlich aufgegriffen"],
+                "Befriedigend": ["Teilweise Abweichung","Rhythmen eingehalten, Tempi usw. eher vernachlässigt"],
+                "Ausreichend": ["Häufig fehlende Beziehung","Unzureichende Umsetzung musikalischer Vorgaben"],
+                "Mangelhaft": ["Sehr geringe Übereinstimmung","Musikalische Vorgaben kaum beachtet"],
+                "Ungenügend": ["Keine erkennbare Beziehung zur Musik","Musikalische Vorgaben nicht umgesetzt"]
+            },
+            "Ausdrucksfähigkeit und Originalität": {
+                "Sehr gut": ["Sehr gute A. und Ausstrahlung","Hohes Maß an Darstellungskönnen","Sehr ideenreiche Übungsvariationen und originelle Übungsverbindungen","Sehr harmonisches Wechselspiel zw. Körper und Objekt"],
+                "Gut": ["Gute A. und Ausstrahlung","Abwechslungsreiche und originelle Verbindung der Übungen","Harmonisches Wechselspiel zw. Körper und Objekt"],
+                "Befriedigend": ["Wenig ausgeprägte A. und Ausstrahlung","Wenig Gestaltungselemente","Solide, wenig ideenreiche Präsentation"],
+                "Ausreichend": ["Wenig wahrnehmbarer Ausdruck in der Bewegung","Kaum Gestaltungselemente","Einfallslose Präsentation"],
+                "Mangelhaft": ["Kaum wahrnehmbare Ausstrahlung","Fehlende Gestaltungselemente","Keine erkennbare Originalität"],
+                "Ungenügend": ["Fehlende Ausstrahlung","Keine Gestaltungselemente","Keine Originalität"]
+            },
+            "Gestaltungsaufbau": {
+                "Sehr gut": ["Vielseitige horizontale Raumausnutzung","Sinnvoller Wechsel der vertikalen Ebenen","Dynamische Kontraste und originelle Gruppenformationen"],
+                "Gut": ["Gelungene Variation der Raumwege","Bewegungen auf verschiedenen vertikalen Ebenen","Einige dynamische Kontraste und ideenreiche Gruppenformationen"],
+                "Befriedigend": ["Nicht immer gelungene Wechsel in der Raumausnutzung","wenige dynamische Kontraste","wenige ideenreiche Gruppenformationen"],
+                "Ausreichend": ["Geringe Raumausnutzung","Kaum dynamische Kontraste","Einfache Gruppenformationen"],
+                "Mangelhaft": ["Sehr geringe Raumausnutzung","Keine dynamischen Kontraste","Keine kreativen Gruppenformationen"],
+                "Ungenügend": ["Fehlende Raumausnutzung","Keine Gestaltung erkennbar"]
+            },
+            "Zusammenwirken in der Gruppe": {
+                "Sehr gut": ["Sehr harmonisches Bild des Zusammenwirkens","Sehr präzise zeitliche Übereinstimmung der einzelnen Übungsteile","Sehr hohe Synchronität"],
+                "Gut": ["Überwiegend harmonisches Zusammenwirken","Überwiegend gelungene zeitliche Übereinstimmung der einzelnen Übungsteile","Erkennbare Synchronität"],
+                "Befriedigend": ["Einige Abweichungen in der Koordination gemeinsamer Übungsteile","Übungsfluss oder Bezug zueinander leicht gestört"],
+                "Ausreichend": ["Häufig keine Übereinstimmung mit der Gruppe","Deutliche Störungen im Zusammenwirken"],
+                "Mangelhaft": ["Sehr geringe Übereinstimmung in der Gruppe","Kaum erkennbares Zusammenwirken"],
+                "Ungenügend": ["Kein erkennbares Zusammenwirken","Keine Synchronität"]
+            }
+        };
+        
+        let ausgewaehlteBausteine = {};
+        let bewertungen = {};
+        
+        const kategorien = Object.keys(textbausteine);
+        const notenwerte = {"Sehr gut":1,"Gut":2,"Befriedigend":3,"Ausreichend":4,"Mangelhaft":5,"Ungenügend":6};
+        
+        // Initialisierung
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('datum').valueAsDate = new Date();
+            
+            const select = document.getElementById('kategorieSelect');
+            kategorien.forEach(kategorie => {
+                const option = document.createElement('option');
+                option.value = kategorie;
+                option.textContent = kategorie;
+                select.appendChild(option);
+                
+                ausgewaehlteBausteine[kategorie] = [];
+                bewertungen[kategorie] = [];
+            });
+            
+            aktualiereNotenberechnung();
+        });
+        
+        function ladeTextbausteine() {
+            const kategorie = document.getElementById('kategorieSelect').value;
+            const container = document.getElementById('textbausteineContainer');
+            
+            if (!kategorie) {
+                container.innerHTML = '<p style="color: #95a5a6; text-align: center; margin-top: 50px; font-style: italic; font-size: 12px;">Bitte wählen Sie eine Kategorie aus</p>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            const bewertungsstufen = ["Sehr gut","Gut","Befriedigend","Ausreichend","Mangelhaft","Ungenügend"];
+            
+            bewertungsstufen.forEach(stufe => {
+                if (textbausteine[kategorie][stufe] && textbausteine[kategorie][stufe].length > 0) {
+                    const stufeDiv = document.createElement('div');
+                    stufeDiv.className = 'bewertungsstufe';
+                    
+                    const titelDiv = document.createElement('div');
+                    titelDiv.className = 'bewertungsstufe-titel';
+                    titelDiv.textContent = stufe;
+                    stufeDiv.appendChild(titelDiv);
+                    
+                    textbausteine[kategorie][stufe].forEach(text => {
+                        const bausteinDiv = document.createElement('div');
+                        bausteinDiv.className = 'textbaustein';
+                        bausteinDiv.textContent = text;
+                        
+                        if (ausgewaehlteBausteine[kategorie].includes(text)) {
+                            bausteinDiv.classList.add('ausgewaehlt');
+                        }
+                        
+                        bausteinDiv.onclick = () => toggleTextbaustein(text, kategorie);
+                        stufeDiv.appendChild(bausteinDiv);
+                    });
+                    
+                    container.appendChild(stufeDiv);
+                }
+            });
+        }
+        
+        function toggleTextbaustein(text, kategorie) {
+            const istAusgewaehlt = ausgewaehlteBausteine[kategorie].includes(text);
+            
+            if (istAusgewaehlt) {
+                entferneBaustein(text, kategorie);
+            } else {
+                fuegeBausteinHinzu(text, kategorie);
+            }
+            
+            ladeTextbausteine();
+        }
+        
+        function fuegeBausteinHinzu(text, kategorie) {
+            let stufe = null;
+            for (const [s, texte] of Object.entries(textbausteine[kategorie])) {
+                if (texte.includes(text)) {
+                    stufe = s;
+                    break;
+                }
+            }
+            
+            if (!stufe) return;
+            
+            ausgewaehlteBausteine[kategorie].push(text);
+            bewertungen[kategorie].push(notenwerte[stufe]);
+            
+            const protokoll = document.getElementById('protokollInhalt');
+            const aktuellerText = protokoll.textContent.trim();
+            
+            let neuerText = '';
+            if (!aktuellerText || aktuellerText === 'Hier erscheinen die ausgewählten Textbausteine...') {
+                neuerText = kategorie + ':\n' + text;
+            } else if (aktuellerText.includes(kategorie + ':')) {
+                neuerText = aktuellerText + ', ' + text;
+            } else {
+                neuerText = aktuellerText + '\n\n' + kategorie + ':\n' + text;
+            }
+            
+            protokoll.textContent = neuerText;
+            aktualiereNotenberechnung();
+        }
+        
+        function entferneBaustein(text, kategorie) {
+            let stufe = null;
+            for (const [s, texte] of Object.entries(textbausteine[kategorie])) {
+                if (texte.includes(text)) {
+                    stufe = s;
+                    break;
+                }
+            }
+            
+            if (!stufe) return;
+            
+            const index = ausgewaehlteBausteine[kategorie].indexOf(text);
+            if (index > -1) ausgewaehlteBausteine[kategorie].splice(index, 1);
+            
+            const notenwert = notenwerte[stufe];
+            const noteIndex = bewertungen[kategorie].indexOf(notenwert);
+            if (noteIndex > -1) bewertungen[kategorie].splice(noteIndex, 1);
+            
+            const protokoll = document.getElementById('protokollInhalt');
+            let neuerText = protokoll.textContent;
+            
+            if (neuerText.includes(', ' + text)) {
+                neuerText = neuerText.replace(', ' + text, '');
+            } else if (neuerText.includes(text + ', ')) {
+                neuerText = neuerText.replace(text + ', ', '');
+            } else if (neuerText.includes(kategorie + ':\n' + text)) {
+                const blocks = neuerText.split('\n\n').filter(block => {
+                    if (block.startsWith(kategorie + ':')) {
+                        const ohneKategorie = block.replace(kategorie + ':\n', '').trim();
+                        return ohneKategorie !== text && ohneKategorie !== '';
+                    }
+                    return true;
+                });
+                neuerText = blocks.join('\n\n');
+            }
+            
+            protokoll.textContent = neuerText.replace(/\n\n\n+/g, '\n\n').trim();
+            aktualiereNotenberechnung();
+        }
+        
+        function aktualiereNotenberechnung() {
+            const kategorieDurchschnitte = {};
+            let anzahlBewertet = 0;
+            
+            kategorien.forEach(kat => {
+                if (bewertungen[kat].length > 0) {
+                    const summe = bewertungen[kat].reduce((a,b) => a+b, 0);
+                    kategorieDurchschnitte[kat] = summe / bewertungen[kat].length;
+                    anzahlBewertet++;
+                } else {
+                    kategorieDurchschnitte[kat] = null;
+                }
+            });
+            
+            // Kategorie-Status aktualisieren (ausführlich)
+            const statusContainer = document.getElementById('kategorieStatus');
+            statusContainer.innerHTML = '';
+            
+            kategorien.forEach(kat => {
+                const item = document.createElement('div');
+                item.className = 'kategorie-item';
+                
+                const icon = document.createElement('div');
+                icon.className = 'kategorie-icon';
+                
+                const name = document.createElement('div');
+                name.className = 'kategorie-name';
+                name.textContent = kat;
+                
+                const note = document.createElement('div');
+                note.className = 'kategorie-note';
+                
+                if (kategorieDurchschnitte[kat] !== null) {
+                    icon.classList.add('bewertet');
+                    icon.textContent = '✓';
+                    note.classList.add('bewertet');
+                    note.textContent = kategorieDurchschnitte[kat].toFixed(1);
+                } else {
+                    icon.classList.add('nicht-bewertet');
+                    icon.textContent = '○';
+                    note.classList.add('nicht-bewertet');
+                    note.textContent = '-';
+                }
+                
+                item.appendChild(icon);
+                item.appendChild(name);
+                item.appendChild(note);
+                statusContainer.appendChild(item);
+            });
+            
+            // Warnung
+            const warnung = document.getElementById('warnung');
+            const kiButton = document.getElementById('kiButton');
+            
+            if (anzahlBewertet < 5) {
+                warnung.classList.add('aktiv');
+                kiButton.disabled = true;
+            } else {
+                warnung.classList.remove('aktiv');
+                kiButton.disabled = false;
+            }
+            
+            // Gesamtnote (kompakt)
+            if (anzahlBewertet === 5) {
+                const gesamtdurchschnitt = Object.values(kategorieDurchschnitte).reduce((a,b) => a+b, 0) / 5;
+                const schulnote = Math.round(gesamtdurchschnitt * 10) / 10;
+                
+                const oberstufenTabelle = {
+                    1.0:15, 1.1:15, 1.2:15, 1.3:14, 1.4:14, 1.5:14,
+                    1.6:13, 1.7:13, 1.8:13, 1.9:12, 2.0:12, 2.1:12,
+                    2.2:11, 2.3:11, 2.4:11, 2.5:10, 2.6:10, 2.7:10,
+                    2.8:9, 2.9:9, 3.0:9, 3.1:8, 3.2:8, 3.3:8,
+                    3.4:7, 3.5:7, 3.6:7, 3.7:6, 3.8:6, 3.9:6,
+                    4.0:5, 4.1:5, 4.2:5, 4.3:4, 4.4:4, 4.5:4,
+                    4.6:3, 4.7:3, 4.8:3, 4.9:2, 5.0:2, 5.1:2,
+                    5.2:1, 5.3:1, 5.4:1, 5.5:1, 5.6:1, 5.7:1,
+                    5.8:0, 5.9:0, 6.0:0
+                };
+                
+                let oberstufenpunkte = 0;
+                let kleinsterAbstand = 999;
+                
+                for (const [note, punkte] of Object.entries(oberstufenTabelle)) {
+                    const abstand = Math.abs(parseFloat(note) - schulnote);
+                    if (abstand < kleinsterAbstand) {
+                        kleinsterAbstand = abstand;
+                        oberstufenpunkte = punkte;
+                    }
+                }
+                
+                document.getElementById('schulnote').textContent = schulnote.toFixed(1);
+                document.getElementById('oberstufenpunkte').textContent = oberstufenpunkte;
+                
+                const schulnoteEl = document.getElementById('schulnote');
+                const oberstufenEl = document.getElementById('oberstufenpunkte');
+                
+                schulnoteEl.className = 'noten-zahl';
+                oberstufenEl.className = 'noten-zahl';
+                
+                if (schulnote <= 1.5) {
+                    schulnoteEl.classList.add('excellent');
+                    oberstufenEl.classList.add('excellent');
+                } else if (schulnote <= 2.5) {
+                    schulnoteEl.classList.add('good');
+                    oberstufenEl.classList.add('good');
+                } else if (schulnote <= 3.5) {
+                    schulnoteEl.classList.add('satisfactory');
+                    oberstufenEl.classList.add('satisfactory');
+                } else if (schulnote <= 4.5) {
+                    schulnoteEl.classList.add('sufficient');
+                    oberstufenEl.classList.add('sufficient');
+                } else if (schulnote <= 5.5) {
+                    schulnoteEl.classList.add('poor');
+                    oberstufenEl.classList.add('poor');
+                } else {
+                    schulnoteEl.classList.add('failing');
+                    oberstufenEl.classList.add('failing');
+                }
+            } else {
+                document.getElementById('schulnote').textContent = '-';
+                document.getElementById('oberstufenpunkte').textContent = '-';
+                document.getElementById('schulnote').className = 'noten-zahl none';
+                document.getElementById('oberstufenpunkte').className = 'noten-zahl none';
+            }
+        }
+        
+        async function generiereFliesstextMitKI() {
+            const protokollText = document.getElementById('protokollInhalt').textContent.trim();
+            
+            if (!protokollText || protokollText === 'Hier erscheinen die ausgewählten Textbausteine...') {
+                alert('Bitte wählen Sie zuerst Textbausteine aus!');
+                return;
+            }
+            
+            const kiButton = document.getElementById('kiButton');
+            const originalText = kiButton.innerHTML;
+            kiButton.disabled = true;
+            kiButton.innerHTML = '⏳ Generiere Fließtext...';
+            
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('authToken')
+                    },
+                    body: JSON.stringify({ protokollText })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    document.getElementById('protokollInhalt').textContent = data.text;
+                } else {
+                    alert('Fehler: ' + (data.error || 'Unbekannter Fehler'));
+                }
+            } catch (error) {
+                console.error('Fehler:', error);
+                alert('Fehler bei der Fließtext-Generierung: ' + error.message);
+            } finally {
+                kiButton.disabled = false;
+                kiButton.innerHTML = originalText;
+            }
+        }
+        
+        function zuruecksetzen() {
+            if (confirm('Möchten Sie wirklich alle Eingaben zurücksetzen?')) {
+                document.getElementById('pruefling').value = '';
+                document.getElementById('pruefer').value = '';
+                document.getElementById('protokollant').value = '';
+                document.getElementById('fachpruefungsleitung').value = '';
+                document.getElementById('protokollInhalt').textContent = '';
+                document.getElementById('datum').valueAsDate = new Date();
+                
+                kategorien.forEach(kategorie => {
+                    ausgewaehlteBausteine[kategorie] = [];
+                    bewertungen[kategorie] = [];
+                });
+                
+                aktualiereNotenberechnung();
+                ladeTextbausteine();
+            }
+        }
+    </script>
+</body>
+</html>
