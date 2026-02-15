@@ -922,15 +922,29 @@
                 let note = '-';
                 if (bewertet) {
                     const stufen = ["Sehr gut", "Gut", "Befriedigend", "Ausreichend", "Mangelhaft", "Ungenügend"];
+                    let notenSumme = 0;
+                    let bausteinAnzahl = 0;
+                    
+                    // Durch alle Stufen gehen
                     for (let stufe of stufen) {
                         const bausteineInStufe = textbausteine[kategorie][stufe] || [];
-                        const hatBaustein = bewertungen[kategorie].some(b => bausteineInStufe.includes(b));
-                        if (hatBaustein) {
-                            note = notenMapping[stufe];
-                            gesamtnote += note;
-                            anzahlBewertungen++;
-                            break;
+                        
+                        // Zähle wie viele Bausteine aus dieser Stufe ausgewählt sind
+                        const ausgewaehltAusDieserStufe = bewertungen[kategorie].filter(b => 
+                            bausteineInStufe.includes(b)
+                        ).length;
+                        
+                        if (ausgewaehltAusDieserStufe > 0) {
+                            notenSumme += notenMapping[stufe] * ausgewaehltAusDieserStufe;
+                            bausteinAnzahl += ausgewaehltAusDieserStufe;
                         }
+                    }
+                    
+                    // Durchschnitt berechnen und auf 1 Dezimalstelle runden
+                    if (bausteinAnzahl > 0) {
+                        note = Math.round((notenSumme / bausteinAnzahl) * 10) / 10;
+                        gesamtnote += note;
+                        anzahlBewertungen++;
                     }
                 }
                 
@@ -1000,7 +1014,7 @@
             });
             
             try {
-                await fetch('/api/prueflings-update', {
+                await fetch('/api/prueflings/update', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1044,7 +1058,7 @@
                     document.getElementById('protokollInhalt').textContent = data.text;
                     
                     // AI-Text in DB speichern
-                    await fetch('/api/prueflings-update', {
+                    await fetch('/api/prueflings/update', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -1084,7 +1098,7 @@
             }
             
             try {
-                const response = await fetch('/api/prueflings-create', {
+                const response = await fetch('/api/prueflings/create', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

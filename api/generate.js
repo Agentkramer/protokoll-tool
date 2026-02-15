@@ -27,24 +27,33 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const prompt = `Du bist ein Experte für die Erstellung professioneller Prüfungsprotokolle im Bereich Tanz.
+const prompt = `Du bist Protokollant bei einer Tanzprüfung. Erstelle einen professionellen Fließtext aus den folgenden Textbausteinen.
 
-Ich habe folgende Textbausteine zu verschiedenen Bewertungskriterien ausgewählt:
+STRUKTUR:
+- Gliedere den Text in 5 Absätze (einer pro Kategorie)
+- Jeder Absatz behandelt eine Bewertungskategorie zusammenhängend
+- KEINE Überschriften, keine Kategorienamen, keine Markdown-Formatierung
+- KEINE einleitende Gesamtüberschrift
 
+FORMULIERUNG:
+- Nutze die Textbausteine als inhaltliche Grundlage
+- Passe die Grammatik an, damit die Sätze korrekt und flüssig sind (z.B. Nominalisierungen, Verbformen, Artikel)
+- Verbinde mehrere Aspekte einer Kategorie zu zusammenhängenden Sätzen
+- Vermeide Aufzählungen - formuliere in ganzen, natürlichen Sätzen
+- WICHTIG: Erfinde keine Bewertungen oder Details, die nicht in den Bausteinen enthalten sind
+
+ABSCHLUSS:
+- Füge nach den 5 Absätzen einen kurzen, wertenden Gesamteindruck hinzu (basierend auf den genannten Aspekten)
+
+FORMAT:
+- Nur reiner Text, keine Formatierungen
+- Absätze durch Leerzeilen trennen
+- Keine **, keine #, keine Markdown-Syntax
+
+Textbausteine (nach Kategorien geordnet):
 ${protokollText}
 
-Bitte formuliere daraus ein professionelles, zusammenhängendes Prüfungsprotokoll in Fließtext-Form. 
-
-Anforderungen:
-- Schreibe einen kohärenten Text, der die ausgewählten Aspekte geschickt verbindet
-- Nutze Übergänge zwischen den verschiedenen Kategorien
-- Der Ton soll sachlich und professionell sein
-- Behalte den Inhalt der Textbausteine bei, formuliere sie aber elegant um
-- Beginne NICHT mit "Die Prüfung zeigte..." oder ähnlichen Floskeln, sondern steige direkt in die erste Kategorie ein
-- Gliedere den Text in zusammenhängende Absätze (nicht nach Kategorien getrennt)
-- Der Text sollte wie ein professionelles Gutachten wirken
-
-Gib NUR den fertigen Fließtext aus, ohne Überschriften, ohne Einleitung, ohne Erklärungen.`;
+Erstelle daraus einen grammatikalisch korrekten, gut strukturierten Protokolltext in Absatzform.`;
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
