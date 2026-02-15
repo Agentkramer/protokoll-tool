@@ -220,7 +220,7 @@
         
         async function loadCompletedSessions() {
             try {
-                const response = await fetch('/api/sessions/completed');
+                const response = await fetch('/api/sessions-completed');
                 const data = await response.json();
                 
                 if (data.success) {
@@ -352,7 +352,7 @@
             }
             
             try {
-                const response = await fetch('/api/sessions/delete', {
+                const response = await fetch('/api/sessions-delete', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

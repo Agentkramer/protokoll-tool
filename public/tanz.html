@@ -689,7 +689,7 @@
         
         async function ladeSessionDaten(sessionId) {
             try {
-                const response = await fetch(`/api/sessions/get?sessionId=${sessionId}`);
+                const response = await fetch(`/api/sessions-get?sessionId=${sessionId}`);
                 const data = await response.json();
                 
                 if (!data.success) {
@@ -755,7 +755,7 @@
             // WICHTIG: Vor dem Wechsel die aktuellen Daten nochmal aus der DB holen
             // um sicherzustellen, dass wir die neuesten Daten haben
             try {
-                const response = await fetch(`/api/sessions/get?sessionId=${sessionData.id}`);
+                const response = await fetch(`/api/sessions-get?sessionId=${sessionData.id}`);
                 const data = await response.json();
                 
                 if (data.success) {
@@ -1000,7 +1000,7 @@
             });
             
             try {
-                await fetch('/api/prueflings/update', {
+                await fetch('/api/prueflings-update', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1044,7 +1044,7 @@
                     document.getElementById('protokollInhalt').textContent = data.text;
                     
                     // AI-Text in DB speichern
-                    await fetch('/api/prueflings/update', {
+                    await fetch('/api/prueflings-update', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -1084,7 +1084,7 @@
             }
             
             try {
-                const response = await fetch('/api/prueflings/create', {
+                const response = await fetch('/api/prueflings-create', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1277,7 +1277,7 @@
             }
             
             try {
-                const response = await fetch('/api/sessions/complete', {
+                const response = await fetch('/api/sessions-complete', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
