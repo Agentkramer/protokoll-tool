@@ -30,30 +30,30 @@ module.exports = async (req, res) => {
 const prompt = `Du bist Protokollant bei einer Tanzprüfung. Erstelle einen professionellen Fließtext aus den folgenden Textbausteinen.
 
 STRUKTUR:
-- Der Input enthält zwei Prüfungsteile: PFLICHTTEIL und WAHLPFLICHTTEIL
-- Behalte diese Zwischenüberschriften bei
-- Jeder Teil enthält 5 Kategorien (Improvisation, Gestaltung, Technik, Musikalität, Ausdruck)
-- Gliedere JEDEN TEIL in 5 Absätze (einer pro Kategorie)
-- KEINE Kategorienamen als Überschriften - nur die Prüfungsteil-Überschriften
-- KEINE Markdown-Formatierung (keine **, keine ###)
+- Gliedere den Text in 5 Absätze (einer pro Kategorie)
+- Jeder Absatz behandelt eine Bewertungskategorie zusammenhängend
+- KEINE Überschriften, keine Kategorienamen, keine Markdown-Formatierung
+- KEINE einleitende Gesamtüberschrift
 
 FORMULIERUNG:
 - Nutze die Textbausteine als inhaltliche Grundlage
-- Passe die Grammatik an, damit die Sätze korrekt und fließend sind (z.B. Nominalisierungen, Verbformen, Artikel)
+- Passe die Grammatik an, damit die Sätze korrekt und flüssig sind (z.B. Nominalisierungen, Verbformen, Artikel)
 - Verbinde mehrere Aspekte einer Kategorie zu zusammenhängenden Sätzen
 - Vermeide Aufzählungen - formuliere in ganzen, natürlichen Sätzen
 - WICHTIG: Erfinde keine Bewertungen oder Details, die nicht in den Bausteinen enthalten sind
 
+ABSCHLUSS:
+- Füge nach den 5 Absätzen einen kurzen, wertenden Gesamteindruck hinzu (basierend auf den genannten Aspekten)
+
 FORMAT:
 - Nur reiner Text, keine Formatierungen
-- Prüfungsteil-Überschriften: === PFLICHTTEIL === und === WAHLPFLICHTTEIL ===
 - Absätze durch Leerzeilen trennen
 - Keine **, keine #, keine Markdown-Syntax
 
 Textbausteine (nach Kategorien geordnet):
 ${protokollText}
 
-Erstelle daraus einen grammatikalisch korrekten, gut strukturierten Protokolltext in Absatzform mit den beiden Prüfungsteil-Überschriften.`;
+Erstelle daraus einen grammatikalisch korrekten, gut strukturierten Protokolltext in Absatzform.`;
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',

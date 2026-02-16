@@ -394,7 +394,13 @@
         
         // Exam Badge anzeigen
         const badge = document.getElementById('examBadge');
-        badge.textContent = examType === 'tanz' ? '💃 Tanz' : '⚽ Sportspiele';
+        const uiVariant = sessionStorage.getItem('uiVariant');
+        
+        if (examType === 'tanz') {
+            badge.textContent = uiVariant === 'tanz-alternativ' ? '🩰 Tanz (Alternative UI)' : '💃 Tanz';
+        } else {
+            badge.textContent = examType === 'sportspiele' ? '⚽ Sportspiele' : examType;
+        }
         badge.classList.add(examType);
         
        // Sportart-Dropdown nur bei Sportspiele anzeigen
@@ -562,7 +568,10 @@ if (examType === 'sportspiele') {
                 if (data.success) {
                     // Session-ID speichern und zur Protokoll-Seite weiterleiten
                     sessionStorage.setItem('sessionId', data.sessionId);
-                    window.location.href = examType + '.html';
+                    
+                    // UI-Variante berücksichtigen (für tanz vs tanz-alternativ)
+                    const uiVariant = sessionStorage.getItem('uiVariant') || examType;
+                    window.location.href = uiVariant + '.html';
                 } else {
                     showError(data.error || 'Fehler beim Erstellen der Session');
                 }
