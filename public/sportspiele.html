@@ -130,9 +130,32 @@
             color: #333;
         }
         
-        #protokollInhalt [data-manuell] {
+
+        #protokollInhalt textarea[data-manuell] {
+            display: block;
+            width: 100%;
+            min-height: 2em;
+            font-family: inherit;
+            font-size: inherit;
             color: #333;
+            background: transparent;
+            border: none;
+            border-left: 2px solid #e0e0e0;
+            padding: 2px 0 4px 8px;
+            margin: 0;
+            resize: none;
             outline: none;
+            overflow: hidden;
+            box-sizing: border-box;
+            line-height: 1.5;
+        }
+        #protokollInhalt textarea[data-manuell]:focus {
+            border-left-color: #2196f3;
+            background: rgba(33, 150, 243, 0.02);
+        }
+        #protokollInhalt textarea[data-manuell]::placeholder {
+            color: #bbb;
+            font-style: italic;
         }
         
         #protokollInhalt:empty::before {
@@ -806,26 +829,6 @@ if (sessionData.sport_type) {
                 const protokoll = document.getElementById('protokollInhalt');
                 if (protokoll) {
 
-                // Enter-Taste in manuellen Bereichen als <br> einfügen statt neuen Div zu klonen
-                protokoll.addEventListener('keydown', (e) => {
-                    if (e.key !== 'Enter') return;
-                    const target = e.target;
-                    if (!target.dataset || !target.dataset.manuell) return;
-                    e.preventDefault();
-                    const sel = window.getSelection();
-                    if (!sel.rangeCount) return;
-                    const range = sel.getRangeAt(0);
-                    range.deleteContents();
-                    const br = document.createElement('br');
-                    range.insertNode(br);
-                    // Cursor nach dem <br> setzen
-                    range.setStartAfter(br);
-                    range.setEndAfter(br);
-                    sel.removeAllRanges();
-                    sel.addRange(range);
-                    // Input-Event manuell triggern für Auto-Save
-                    target.dispatchEvent(new Event('input', { bubbles: true }));
-                });
                     protokoll.addEventListener('input', (e) => {
                         if (!e.target.dataset || !e.target.dataset.manuell) return;
                         clearTimeout(window._manuellSaveTimer);
@@ -1014,6 +1017,7 @@ if (sessionData.sport_type) {
 
         // Hilfsfunktion: innerHTML -> plain text mit Zeilenumbrüchen
         function getManuellText(el) {
+            if (el.tagName === 'TEXTAREA') return el.value.trim();
             return el.innerHTML
                 .replace(/<br\s*\/?>/gi, '\n')
                 .replace(/<div>/gi, '\n')
@@ -1024,6 +1028,12 @@ if (sessionData.sport_type) {
                 .replace(/&gt;/g, '>')
                 .trim();
         }
+
+        function autoResizeTextarea(ta) {
+            ta.style.height = 'auto';
+            ta.style.height = ta.scrollHeight + 'px';
+        }
+
         function toggleTextbaustein(kategorie, baustein, stufe) {
             // Wenn KI-Text vorhanden: Warnung anzeigen
             if (currentPruefling && currentPruefling.ai_text) {
@@ -1102,15 +1112,14 @@ if (sessionData.sport_type) {
                     feld.appendChild(block);
                     
                     // Manueller Ergänzungsbereich (div für mehrzeilige Eingabe)
-                    const manuell = document.createElement('div');
+                    const manuell = document.createElement('textarea');
                     manuell.dataset.manuell = kategorie;
-                    manuell.contentEditable = 'true';
-                    manuell.style.whiteSpace = 'pre-wrap';
-                    manuell.style.minHeight = '1.7em';
-                    manuell.style.paddingBottom = '4px';
-                    manuell.style.outline = 'none';
-                    manuell.innerHTML = (quellTexte[kategorie] || '').replace(/\n/g, '<br>');
+                    manuell.placeholder = 'Manuelle Ergänzung...';
+                    manuell.value = quellTexte[kategorie] || '';
+                    manuell.rows = 1;
                     feld.appendChild(manuell);
+                    autoResizeTextarea(manuell);
+                    manuell.addEventListener('input', () => autoResizeTextarea(manuell));
                 }
             });
             

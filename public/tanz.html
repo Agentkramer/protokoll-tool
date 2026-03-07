@@ -1102,28 +1102,9 @@
                 const protokoll = document.getElementById('protokollInhalt');
                 if (protokoll) {
 
-                // Enter-Taste in manuellen Bereichen als <br> einfügen statt neuen Div zu klonen
-                protokoll.addEventListener('keydown', (e) => {
-                    if (e.key !== 'Enter') return;
-                    const target = e.target;
-                    if (!target.dataset || !target.dataset.manuell) return;
-                    e.preventDefault();
-                    const sel = window.getSelection();
-                    if (!sel.rangeCount) return;
-                    const range = sel.getRangeAt(0);
-                    range.deleteContents();
-                    const br = document.createElement('br');
-                    range.insertNode(br);
-                    // Cursor nach dem <br> setzen
-                    range.setStartAfter(br);
-                    range.setEndAfter(br);
-                    sel.removeAllRanges();
-                    sel.addRange(range);
-                    // Input-Event manuell triggern für Auto-Save
-                    target.dispatchEvent(new Event('input', { bubbles: true }));
-                });
                     protokoll.addEventListener('input', (e) => {
                         if (!e.target.dataset || !e.target.dataset.manuell) return;
+                    if (e.target.tagName !== 'TEXTAREA') return;
                         clearTimeout(window._manuellSaveTimer);
                         window._manuellSaveTimer = setTimeout(() => {
                             if (!currentPruefling) return;
@@ -1374,6 +1355,8 @@
 
         // Hilfsfunktion: innerHTML -> plain text mit Zeilenumbrüchen
         function getManuellText(el) {
+            // textarea: .value direkt verwenden
+            if (el.tagName === 'TEXTAREA') return el.value.trim();
             return el.innerHTML
                 .replace(/<br\s*\/?>/gi, '\n')
                 .replace(/<div>/gi, '\n')
@@ -1384,6 +1367,12 @@
                 .replace(/&gt;/g, '>')
                 .trim();
         }
+
+        function autoResizeTextarea(ta) {
+            ta.style.height = 'auto';
+            ta.style.height = ta.scrollHeight + 'px';
+        }
+
         async function textbausteinToggle(button) {
             if (!currentPruefling) {
                 alert('Bitte erst Prüfling auswählen!');
@@ -1548,15 +1537,14 @@
                     feld.appendChild(block);
 
                     // Manueller Ergänzungsbereich (div für mehrzeilige Eingabe)
-                    const manuell = document.createElement('div');
+                    const manuell = document.createElement('textarea');
                     manuell.dataset.manuell = blockKey;
-                    manuell.contentEditable = 'true';
-                    manuell.style.whiteSpace = 'pre-wrap';
-                    manuell.style.minHeight = '1.7em';
-                    manuell.style.paddingBottom = '4px';
-                    manuell.style.outline = 'none';
-                    manuell.innerHTML = (quellTexte[blockKey] || '').replace(/\n/g, '<br>');
+                    manuell.placeholder = 'Manuelle Ergänzung...';
+                    manuell.value = quellTexte[blockKey] || '';
+                    manuell.rows = 1;
                     feld.appendChild(manuell);
+                    autoResizeTextarea(manuell);
+                    manuell.addEventListener('input', () => autoResizeTextarea(manuell));
                 });
             });
 
