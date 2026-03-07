@@ -805,24 +805,19 @@ if (sessionData.sport_type) {
         }
         
         function aktualisierePrueflingDropdowns() {
-            const mainSelect = document.getElementById('prueflingSelect');
-            const sidebarSelect = document.getElementById('sidebarPrueflingSelect');
-            
-            [mainSelect, sidebarSelect].forEach(select => {
-                select.innerHTML = '';
-                prueflings.forEach(p => {
-                    const option = document.createElement('option');
-                    option.value = p.id;
-                    option.textContent = p.name + (p.completed ? ' ✓' : '');
-                    select.appendChild(option);
-                });
-                select.disabled = false;
-                
-                if (currentPrueflingId) {
-                    select.value = currentPrueflingId;
-                }
-            });
-        }
+    const sidebarSelect = document.getElementById('sidebarPrueflingSelect');
+    sidebarSelect.innerHTML = '';
+    prueflings.forEach(p => {
+        const option = document.createElement('option');
+        option.value = p.id;
+        option.textContent = p.name + (p.completed ? ' ✓' : '');
+        sidebarSelect.appendChild(option);
+    });
+    sidebarSelect.disabled = false;
+    if (currentPrueflingId) {
+        sidebarSelect.value = currentPrueflingId;
+    }
+}
         
         async function ladePrueflingDaten(prueflingId) {
             // WICHTIG: Vor dem Wechsel die aktuellen Daten nochmal aus der DB holen
@@ -847,7 +842,6 @@ if (sessionData.sport_type) {
             }
             
             // Beide Dropdowns synchronisieren
-            document.getElementById('prueflingSelect').value = prueflingId;
             document.getElementById('sidebarPrueflingSelect').value = prueflingId;
             
             // Bewertungen und Textbausteine laden
@@ -874,13 +868,7 @@ if (sessionData.sport_type) {
             aktualisiereKategorieStatus();
             ladeTextbausteine();
         }
-        
-        function prueflingWechseln() {
-            const newId = document.getElementById('prueflingSelect').value;
-            if (newId && newId !== currentPrueflingId) {
-                ladePrueflingDaten(newId);
-            }
-        }
+
         
         function prueflingWechselnAusSidebar() {
             const newId = document.getElementById('sidebarPrueflingSelect').value;
