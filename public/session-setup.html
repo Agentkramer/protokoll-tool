@@ -569,7 +569,7 @@ if (examType === 'sportspiele') {
                     // Session-ID speichern und zur Protokoll-Seite weiterleiten
                     sessionStorage.setItem('sessionId', data.sessionId);
                     
-                   window.location.href = uiVariant + '.html';
+                   window.location.href = examType + '.html';
                 } else {
                     showError(data.error || 'Fehler beim Erstellen der Session');
                 }
