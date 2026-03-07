@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tanz-Protokoll Tool</title>
+    <title>Tanz-Protokoll Tool (Alternative)</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -452,31 +452,36 @@
         .textbausteine {
             display: flex;
             flex-direction: column;
-            gap: 6px;
-        }
-        
-        .textbaustein {
-            display: flex;
-            align-items: start;
             gap: 8px;
         }
         
-        .textbaustein input[type="checkbox"] {
-            margin-top: 2px;
+        .textbaustein-btn {
+            padding: 12px 15px;
+            border: 2px solid #ecf0f1;
+            border-radius: 6px;
+            background: white;
             cursor: pointer;
-            width: 16px;
-            height: 16px;
-        }
-        
-        .textbaustein label {
-            cursor: pointer;
-            font-size: 12px;
+            font-size: 13px;
             line-height: 1.5;
             color: #2c3e50;
+            text-align: left;
+            transition: all 0.2s;
         }
         
-        .textbaustein:hover label {
-            color: #3498db;
+        .textbaustein-btn:hover {
+            border-color: #3498db;
+            background: #e8f4f8;
+        }
+        
+        .textbaustein-btn.selected {
+            background: #27ae60;
+            color: white;
+            border-color: #27ae60;
+        }
+        
+        .textbaustein-btn.selected:hover {
+            background: #229954;
+            border-color: #229954;
         }
         
         /* Action-Buttons */
@@ -585,7 +590,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>🩰 Tanz-Prüfungsprotokoll</h1>
+        <h1>🩰 Tanz-Prüfungsprotokoll (Alternative UI)</h1>
         <div class="header-actions">
             <button class="btn-header" style="background: #95a5a6; color: white;" onclick="zurueckZurAuswahl()">← Zurück</button>
             <button class="btn-header btn-end-session" onclick="sessionBeenden()">Prüfung beenden</button>
@@ -626,6 +631,9 @@
                             <span class="noten-label-klein">Empfehlung:</span>
                             <div class="noten-werte">
                                 <div class="noten-box">
+                                    
+                                </div>
+                                <div class="noten-box">
                                     <span class="noten-zahl" id="notePflicht">--</span>
                                     <span class="noten-einheit">Pkt.</span>
                                 </div>
@@ -641,6 +649,9 @@
                             <span class="noten-label-klein">Empfehlung:</span>
                             <div class="noten-werte">
                                 <div class="noten-box">
+                                    
+                                </div>
+                                <div class="noten-box">
                                     <span class="noten-zahl" id="noteWahl">--</span>
                                     <span class="noten-einheit">Pkt.</span>
                                 </div>
@@ -654,6 +665,9 @@
                     <div class="teil-noten-bereich" style="background: transparent;">
                         <span class="noten-label-klein" style="color: #2c3e50; font-size: 13px;">Gesamtbewertung (Empfehlung):</span>
                         <div class="noten-werte">
+                            <div class="noten-box">
+                                
+                            </div>
                             <div class="noten-box">
                                 <span class="noten-zahl" id="noteGesamt">--</span>
                                 <span class="noten-einheit">Pkt.</span>
@@ -686,6 +700,13 @@
                 <button class="btn-neu" onclick="neuerPrueflingModal()">+ Neu</button>
             </div>
             
+            <!-- Kategorie-Auswahl -->
+            <div class="auswahl-controls">
+                <select id="kategorieSelect" class="pruefling-select" onchange="kategorieWechsel()">
+                    <option value="">Kategorie auswählen...</option>
+                </select>
+            </div>
+            
             <!-- Kategorien -->
             <div class="kategorien-container" id="kategorienContainer"></div>
             
@@ -716,6 +737,7 @@
         let prueflings = [];
         let currentPruefling = null;
         let currentTeil = 'pflichtteil'; // NEU: aktueller Prüfungsteil
+        let currentKategorie = null; // NEU: aktuell gewählte Kategorie
         
         // Kategorien-Definitionen
         const kategorien = {
@@ -1072,13 +1094,106 @@
                 // Prüfling-Dropdowns aktualisieren
                 aktualisierePrueflingDropdowns();
                 
-                // Kategorien rendern
-                renderKategorien();
+                // Kategorie-Dropdown befüllen
+                renderKategorieDropdown();
                 
             } catch (error) {
                 console.error('Init-Fehler:', error);
                 alert('Fehler beim Laden der Daten: ' + error.message);
             }
+        }
+        
+        // ========== KATEGORIE-DROPDOWN ==========
+        function renderKategorieDropdown() {
+            const select = document.getElementById('kategorieSelect');
+            select.innerHTML = '<option value="">Kategorie auswählen...</option>';
+            
+            Object.entries(kategorien).forEach(([key, kategorie]) => {
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = `${kategorie.icon} ${kategorie.name}`;
+                select.appendChild(option);
+            });
+        }
+        
+        function kategorieWechsel() {
+            const select = document.getElementById('kategorieSelect');
+            currentKategorie = select.value || null;
+            
+            if (currentKategorie) {
+                renderAktuelleKategorie();
+            } else {
+                document.getElementById('kategorienContainer').innerHTML = '<div style="padding: 20px; text-align: center; color: #95a5a6;">Bitte Kategorie auswählen...</div>';
+            }
+        }
+        
+        // ========== KATEGORIE RENDERN (Button-Stil) ==========
+        function renderAktuelleKategorie() {
+            const container = document.getElementById('kategorienContainer');
+            
+            if (!currentKategorie) {
+                container.innerHTML = '<div style="padding: 20px; text-align: center; color: #95a5a6;">Bitte Kategorie auswählen...</div>';
+                return;
+            }
+            
+            const kategorie = kategorien[currentKategorie];
+            container.innerHTML = '';
+            
+            const section = document.createElement('div');
+            section.className = 'kategorie-section';
+            
+            let stufenHTML = '';
+            kategorie.stufen.forEach((stufe, stufeIdx) => {
+                let bausteineHTML = '';
+                stufe.bausteine.forEach((baustein, bausteinIdx) => {
+                    const btnId = `btn_${currentKategorie}_${stufeIdx}_${bausteinIdx}`;
+                    const isSelected = isBausteinSelected(currentKategorie, baustein);
+                    
+                    bausteineHTML += `
+                        <button class="textbaustein-btn ${isSelected ? 'selected' : ''}"
+                                id="${btnId}"
+                                data-kategorie="${currentKategorie}"
+                                data-stufe="${stufeIdx}"
+                                data-baustein="${bausteinIdx}"
+                                data-text="${baustein}"
+                                onclick="textbausteinToggle(this)">
+                            ${baustein}
+                        </button>
+                    `;
+                });
+                
+                stufenHTML += `
+                    <div class="stufe">
+                        <div class="stufe-header">
+                            <span class="stufe-note">${stufe.note}</span>
+                            <span class="stufe-beschreibung">${stufe.beschreibung}</span>
+                        </div>
+                        <div class="textbausteine">
+                            ${bausteineHTML}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            section.innerHTML = `
+                <div class="kategorie-header">
+                    <div class="kategorie-icon-gross">${kategorie.icon}</div>
+                    <div class="kategorie-titel">${kategorie.name}</div>
+                </div>
+                <div class="kategorie-notiz">${kategorie.hinweis}</div>
+                <div class="stufen-container">
+                    ${stufenHTML}
+                </div>
+            `;
+            
+            container.appendChild(section);
+        }
+        
+        function isBausteinSelected(kategorie, bausteinText) {
+            if (!currentPruefling || !currentPruefling.selections) return false;
+            const teilSelections = currentPruefling.selections[currentTeil];
+            if (!teilSelections || !teilSelections[kategorie]) return false;
+            return teilSelections[kategorie].includes(bausteinText);
         }
         
         // ========== PRÜFUNGSTEIL-WECHSEL ==========
@@ -1093,69 +1208,13 @@
                 }
             });
             
-            // Checkboxen aktualisieren basierend auf gespeicherten Daten
-            if (currentPruefling) {
-                ladeCheckboxenFuerTeil();
+            // Aktuelle Kategorie neu rendern
+            if (currentKategorie) {
+                renderAktuelleKategorie();
             }
             
             // Bewertung aktualisieren
             aktualisiereNoten();
-        }
-        
-        // ========== KATEGORIEN RENDERN ==========
-        function renderKategorien() {
-            const container = document.getElementById('kategorienContainer');
-            container.innerHTML = '';
-            
-            Object.entries(kategorien).forEach(([key, kategorie]) => {
-                const section = document.createElement('div');
-                section.className = 'kategorie-section';
-                
-                let stufenHTML = '';
-                kategorie.stufen.forEach((stufe, stufeIdx) => {
-                    let bausteineHTML = '';
-                    stufe.bausteine.forEach((baustein, bausteinIdx) => {
-                        const checkboxId = `check_${key}_${stufeIdx}_${bausteinIdx}`;
-                        bausteineHTML += `
-                            <div class="textbaustein">
-                                <input type="checkbox" 
-                                       id="${checkboxId}" 
-                                       data-kategorie="${key}"
-                                       data-stufe="${stufeIdx}"
-                                       data-baustein="${bausteinIdx}"
-                                       data-text="${baustein}"
-                                       onchange="textbausteinGeaendert(this)">
-                                <label for="${checkboxId}">${baustein}</label>
-                            </div>
-                        `;
-                    });
-                    
-                    stufenHTML += `
-                        <div class="stufe">
-                            <div class="stufe-header">
-                                <span class="stufe-note">${stufe.note}</span>
-                                <span class="stufe-beschreibung">${stufe.beschreibung}</span>
-                            </div>
-                            <div class="textbausteine">
-                                ${bausteineHTML}
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                section.innerHTML = `
-                    <div class="kategorie-header">
-                        <div class="kategorie-icon-gross">${kategorie.icon}</div>
-                        <div class="kategorie-titel">${kategorie.name}</div>
-                    </div>
-                    <div class="kategorie-notiz">${kategorie.hinweis}</div>
-                    <div class="stufen-container">
-                        ${stufenHTML}
-                    </div>
-                `;
-                
-                container.appendChild(section);
-            });
         }
         
         // ========== PRÜFLING-VERWALTUNG ==========
@@ -1214,7 +1273,12 @@
                 
                 // UI aktualisieren
                 document.getElementById('prueflingSelect').value = prueflingId;
-                ladeCheckboxenFuerTeil();
+                
+                // Aktuelle Kategorie neu rendern (wenn eine ausgewählt ist)
+                if (currentKategorie) {
+                    renderAktuelleKategorie();
+                }
+                
                 aktualisiereProtokoll();
                 aktualisiereNoten();
                 
@@ -1224,42 +1288,16 @@
             }
         }
         
-        function ladeCheckboxenFuerTeil() {
-            alleCheckboxenZuruecksetzen();
-            
-            if (!currentPruefling || !currentPruefling.selections) return;
-            
-            // Neue Struktur: selections.pflichtteil / selections.wahlpflichtteil
-            const teilSelections = currentPruefling.selections[currentTeil];
-            if (!teilSelections) return;
-            
-            // Checkboxen für aktuellen Teil setzen
-            Object.entries(teilSelections).forEach(([kategorie, bausteine]) => {
-                bausteine.forEach(baustein => {
-                    // Finde Checkbox mit diesem Text
-                    const checkboxen = document.querySelectorAll(`input[type="checkbox"][data-kategorie="${kategorie}"]`);
-                    checkboxen.forEach(cb => {
-                        if (cb.dataset.text === baustein) {
-                            cb.checked = true;
-                        }
-                    });
-                });
-            });
-        }
-        
-        function alleCheckboxenZuruecksetzen() {
-            document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-                cb.checked = false;
-            });
-        }
-        
-        // ========== TEXTBAUSTEIN-ÄNDERUNG ==========
-        async function textbausteinGeaendert(checkbox) {
+        // ========== TEXTBAUSTEIN-ÄNDERUNG (Button-Stil) ==========
+        async function textbausteinToggle(button) {
             if (!currentPruefling) {
-                checkbox.checked = false;
                 alert('Bitte erst Prüfling auswählen!');
                 return;
             }
+            
+            const kategorie = button.dataset.kategorie;
+            const text = button.dataset.text;
+            const isCurrentlySelected = button.classList.contains('selected');
             
             // Neue selections-Struktur erstellen
             const selections = currentPruefling.selections || { pflichtteil: {}, wahlpflichtteil: {} };
@@ -1268,22 +1306,21 @@
             if (!selections.pflichtteil) selections.pflichtteil = {};
             if (!selections.wahlpflichtteil) selections.wahlpflichtteil = {};
             
-            const kategorie = checkbox.dataset.kategorie;
-            const text = checkbox.dataset.text;
-            
             // Aktuellen Teil aktualisieren
             if (!selections[currentTeil][kategorie]) {
                 selections[currentTeil][kategorie] = [];
             }
             
-            if (checkbox.checked) {
+            if (isCurrentlySelected) {
+                // Entfernen
+                selections[currentTeil][kategorie] = selections[currentTeil][kategorie].filter(t => t !== text);
+                button.classList.remove('selected');
+            } else {
                 // Hinzufügen
                 if (!selections[currentTeil][kategorie].includes(text)) {
                     selections[currentTeil][kategorie].push(text);
                 }
-            } else {
-                // Entfernen
-                selections[currentTeil][kategorie] = selections[currentTeil][kategorie].filter(t => t !== text);
+                button.classList.add('selected');
             }
             
             // In DB speichern
@@ -1309,7 +1346,12 @@
             } catch (error) {
                 console.error('Speicher-Fehler:', error);
                 alert('Fehler beim Speichern: ' + error.message);
-                checkbox.checked = !checkbox.checked;
+                // Toggle zurück bei Fehler
+                if (isCurrentlySelected) {
+                    button.classList.add('selected');
+                } else {
+                    button.classList.remove('selected');
+                }
             }
         }
         
@@ -1472,6 +1514,7 @@
         function resetNoten() {
             ['Pflicht', 'Wahl', 'Gesamt'].forEach(teil => {
                 document.getElementById('note' + teil).textContent = '--';
+                
             });
             
             ['kategorieStatusPflicht', 'kategorieStatusWahl'].forEach(id => {

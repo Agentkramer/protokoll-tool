@@ -233,12 +233,6 @@
                     <div class="exam-subtitle">Sportprüfung</div>
                 </div>
                 
-                <div class="exam-card tanz" onclick="selectExam('tanz-alternativ')" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
-                    <div class="exam-icon">🩰</div>
-                    <div class="exam-title">Tanz (Alt.)</div>
-                    <div class="exam-subtitle">Alternative UI</div>
-                </div>
-                
                 <div class="exam-card sportspiele" onclick="selectExam('sportspiele')">
                     <div class="exam-icon">⚽</div>
                     <div class="exam-title">Sportspiele</div>
@@ -329,15 +323,12 @@
             window.location.href = examType + '.html';
         }
         
-        function selectExam(examType) {
-            if (examType === 'tanz' || examType === 'tanz-alternativ' || examType === 'sportspiele') {
-                // Bei tanz-alternativ speichern wir 'tanz' als examType für die DB
-                const dbExamType = examType === 'tanz-alternativ' ? 'tanz' : examType;
-                sessionStorage.setItem('examType', dbExamType);
-                sessionStorage.setItem('uiVariant', examType); // Für Routing zur richtigen HTML
-                window.location.href = 'session-setup.html';
-            }
-        }
+       function selectExam(examType) {
+    if (examType === 'tanz' || examType === 'sportspiele') {
+        sessionStorage.setItem('examType', examType);
+        window.location.href = 'session-setup.html';
+    }
+}
         
         function openArchive() {
             window.location.href = 'archive.html';

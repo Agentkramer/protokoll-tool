@@ -397,7 +397,7 @@
         const uiVariant = sessionStorage.getItem('uiVariant');
         
         if (examType === 'tanz') {
-            badge.textContent = uiVariant === 'tanz-alternativ' ? '🩰 Tanz (Alternative UI)' : '💃 Tanz';
+    badge.textContent = '💃 Tanz';
         } else {
             badge.textContent = examType === 'sportspiele' ? '⚽ Sportspiele' : examType;
         }
@@ -569,9 +569,7 @@ if (examType === 'sportspiele') {
                     // Session-ID speichern und zur Protokoll-Seite weiterleiten
                     sessionStorage.setItem('sessionId', data.sessionId);
                     
-                    // UI-Variante berücksichtigen (für tanz vs tanz-alternativ)
-                    const uiVariant = sessionStorage.getItem('uiVariant') || examType;
-                    window.location.href = uiVariant + '.html';
+                   window.location.href = uiVariant + '.html';
                 } else {
                     showError(data.error || 'Fehler beim Erstellen der Session');
                 }
