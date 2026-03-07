@@ -1251,6 +1251,29 @@
                 aktualisiereNoten();
                 return;
             }
+
+            // Pending Debounce-Timer sofort flushen vor dem Wechsel
+            clearTimeout(window._manuellSaveTimer);
+            if (currentPruefling) {
+                const manuelleTexte = {};
+                document.querySelectorAll('[data-manuell]').forEach(m => {
+                    if (m.innerText.trim()) {
+                        manuelleTexte[m.dataset.manuell] = m.innerText;
+                    }
+                });
+                if (Object.keys(manuelleTexte).length > 0) {
+                    const selectionsAktuell = currentPruefling.selections || { pflichtteil: {}, wahlpflichtteil: {} };
+                    selectionsAktuell['_manuell'] = manuelleTexte;
+                    await fetch('/api/prueflings-update', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            prueflingId: currentPruefling.id,
+                            selections: selectionsAktuell
+                        })
+                    });
+                }
+            }
             
             await ladePrueflingDaten(prueflingId);
         }

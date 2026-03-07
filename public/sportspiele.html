@@ -885,9 +885,34 @@ if (sessionData.sport_type) {
         }
 
         
-        function prueflingWechselnAusSidebar() {
+        async function prueflingWechselnAusSidebar() {
             const newId = document.getElementById('sidebarPrueflingSelect').value;
             if (newId && newId !== currentPrueflingId) {
+                // Pending Debounce-Timer sofort flushen vor dem Wechsel
+                clearTimeout(window._manuellSaveTimer);
+                if (currentPruefling) {
+                    const manuelleTexte = {};
+                    document.querySelectorAll('[data-manuell]').forEach(m => {
+                        if (m.innerText.trim()) {
+                            manuelleTexte[m.dataset.manuell] = m.innerText;
+                        }
+                    });
+                    if (Object.keys(manuelleTexte).length > 0) {
+                        const selectionsAktuell = {};
+                        kategorien.forEach(kat => {
+                            selectionsAktuell[kat] = ausgewaehlteBausteine[kat];
+                        });
+                        selectionsAktuell['_manuell'] = manuelleTexte;
+                        await fetch('/api/prueflings-update', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                prueflingId: currentPrueflingId,
+                                selections: selectionsAktuell
+                            })
+                        });
+                    }
+                }
                 ladePrueflingDaten(newId);
             }
         }
