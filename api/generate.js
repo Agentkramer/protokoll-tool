@@ -20,14 +20,46 @@ module.exports = async (req, res) => {
     return res.status(500).json({ error: 'API-Key nicht konfiguriert' });
   }
 
-  const { protokollText } = req.body;
+  const { protokollText, examType } = req.body;
 
   if (!protokollText) {
     return res.status(400).json({ error: 'Protokolltext erforderlich' });
   }
 
   try {
-const prompt = `Du bist Protokollant bei einer Tanzprüfung. Erstelle einen professionellen Fließtext aus den folgenden Textbausteinen.
+    let prompt;
+
+    if (examType === 'sportspiele') {
+      prompt = `Du bist Protokollant bei einer Sportspiele-Prüfung. Erstelle einen professionellen Fließtext aus den folgenden Textbausteinen.
+
+STRUKTUR:
+- Der Input enthält drei Prüfungsteile: Teil 1 (30%), Teil 2 (30%), Teil 3 (40%)
+- Behalte die Überschriften der Prüfungsteile exakt so bei, wie sie im Input stehen
+- Gliedere jeden Teil in einen zusammenhängenden Absatz
+- KEINE Kategorienamen als Überschriften
+- KEINE Markdown-Formatierung (keine **, keine ###)
+
+FORMULIERUNG:
+- Nutze die Textbausteine als inhaltliche Grundlage
+- Passe die Grammatik an, damit die Sätze korrekt und fließend sind (z.B. Nominalisierungen, Verbformen, Artikel)
+- Verbinde mehrere Aspekte zu zusammenhängenden Sätzen
+- Vermeide Aufzählungen - formuliere in ganzen, natürlichen Sätzen
+- WICHTIG: Erfinde keine Bewertungen oder Details, die nicht in den Bausteinen enthalten sind
+
+FORMAT:
+- Nur reiner Text, keine Formatierungen
+- Prüfungsteil-Überschriften exakt aus dem Input übernehmen
+- Absätze durch Leerzeilen trennen
+- Keine **, keine #, keine Markdown-Syntax
+
+Textbausteine (nach Prüfungsteilen geordnet):
+${protokollText}
+
+Erstelle daraus einen grammatikalisch korrekten, gut strukturierten Protokolltext in Absatzform.`;
+
+    } else {
+      // Standard: Tanz
+      prompt = `Du bist Protokollant bei einer Tanzprüfung. Erstelle einen professionellen Fließtext aus den folgenden Textbausteinen.
 
 STRUKTUR:
 - Der Input enthält zwei Prüfungsteile: PFLICHTTEIL und WAHLPFLICHTTEIL
@@ -54,6 +86,7 @@ Textbausteine (nach Kategorien geordnet):
 ${protokollText}
 
 Erstelle daraus einen grammatikalisch korrekten, gut strukturierten Protokolltext in Absatzform mit den beiden Prüfungsteil-Überschriften.`;
+    }
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
