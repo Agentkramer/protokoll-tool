@@ -851,17 +851,20 @@ if (sessionData.sport_type) {
             // Bewertungen und Textbausteine laden
             const selections = currentPruefling.selections || {};
             
-            // WICHTIG: Arrays aus DB korrekt übernehmen
+            // WICHTIG: Arrays aus DB korrekt übernehmen (_manuell-Schlüssel ignorieren)
             kategorien.forEach(kategorie => {
                 if (selections[kategorie] && Array.isArray(selections[kategorie])) {
-                    ausgewaehlteBausteine[kategorie] = [...selections[kategorie]]; // Kopie erstellen
-                    bewertungen[kategorie] = [...selections[kategorie]]; // Kopie erstellen
+                    ausgewaehlteBausteine[kategorie] = [...selections[kategorie]];
+                    bewertungen[kategorie] = [...selections[kategorie]];
                 } else {
                     ausgewaehlteBausteine[kategorie] = [];
                     bewertungen[kategorie] = [];
                 }
             });
-            
+
+            // Gespeicherte manuelle Texte für aktualisiereProtokolltext bereitstellen
+            window._geladeneManuellTexte = selections['_manuell'] || {};
+
             // AI-Text laden wenn vorhanden
             if (currentPruefling.ai_text) {
                 const feld = document.getElementById('protokollInhalt');
@@ -949,7 +952,7 @@ if (sessionData.sport_type) {
         function aktualisiereProtokolltext() {
             const feld = document.getElementById('protokollInhalt');
             
-            // Bestehende manuelle Ergänzungen pro Kategorie einsammeln
+            // Bestehende manuelle Ergänzungen aus dem Feld einsammeln
             const manuelleTexte = {};
             feld.querySelectorAll('[data-baustein-block]').forEach(block => {
                 const kat = block.dataset.bausteinBlock;
@@ -960,6 +963,11 @@ if (sessionData.sport_type) {
                     manuelleTexte[kat] = naechster.textContent;
                 }
             });
+            
+            // Geladene Texte aus DB als Fallback (einmalig nach Prüflingswechsel)
+            const quellTexte = Object.keys(manuelleTexte).length > 0
+                ? manuelleTexte
+                : (window._geladeneManuellTexte || {});
             
             // Protokollfeld neu aufbauen
             feld.innerHTML = '';
@@ -987,10 +995,13 @@ if (sessionData.sport_type) {
                     manuell.style.whiteSpace = 'pre-wrap';
                     manuell.style.minHeight = '1.7em';
                     manuell.style.paddingBottom = '4px';
-                    manuell.textContent = manuelleTexte[kategorie] || '';
+                    manuell.textContent = quellTexte[kategorie] || '';
                     feld.appendChild(manuell);
                 }
             });
+            
+            // DB-Texte verbraucht – zurücksetzen
+            window._geladeneManuellTexte = {};
             
             // KI-Button aktivieren wenn Text vorhanden
             const kiButton = document.getElementById('kiButton');
@@ -1104,6 +1115,17 @@ if (sessionData.sport_type) {
             kategorien.forEach(kategorie => {
                 selections[kategorie] = ausgewaehlteBausteine[kategorie];
             });
+
+            // Manuelle Ergänzungen aus dem Protokollfeld mitspeichern
+            const manuelleTexte = {};
+            document.querySelectorAll('[data-manuell]').forEach(el => {
+                if (el.textContent.trim()) {
+                    manuelleTexte[el.dataset.manuell] = el.textContent;
+                }
+            });
+            if (Object.keys(manuelleTexte).length > 0) {
+                selections['_manuell'] = manuelleTexte;
+            }
             
             try {
                 await fetch('/api/prueflings/update', {
@@ -1143,7 +1165,7 @@ if (sessionData.sport_type) {
                         'Content-Type': 'application/json',
                         'Authorization': 'Bearer ' + sessionStorage.getItem('authenticated')
                     },
-                    body: JSON.stringify({ protokollText, examType: 'sportspiele' })
+                    body: JSON.stringify({ protokollText })
                 });
                 
                 const data = await response.json();
