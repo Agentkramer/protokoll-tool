@@ -134,7 +134,7 @@
         #protokollInhalt textarea[data-manuell] {
             display: block;
             width: 100%;
-            min-height: 3.5em;
+            min-height: 7em;
             font-family: inherit;
             font-size: inherit;
             color: #333;
@@ -1132,7 +1132,7 @@ if (sessionData.sport_type) {
                     manuell.dataset.manuell = kategorie;
                     manuell.placeholder = 'Manuelle Ergänzung...';
                     manuell.value = quellTexte[kategorie] || '';
-                    manuell.rows = 2;
+                    manuell.rows = 4;
                     feld.appendChild(manuell);
                     autoResizeTextarea(manuell);
                     manuell.addEventListener('input', () => autoResizeTextarea(manuell));

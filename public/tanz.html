@@ -137,7 +137,34 @@
             outline: none;
             border-color: #3498db;
         }
-        
+
+        #protokollInhalt textarea[data-manuell] {
+            display: block;
+            width: 100%;
+            min-height: 7em;
+            font-family: inherit;
+            font-size: inherit;
+            color: #333;
+            background: transparent;
+            border: none;
+            border-left: 2px solid #e0e0e0;
+            padding: 2px 0 4px 8px;
+            margin: 0;
+            resize: none;
+            outline: none;
+            overflow: hidden;
+            box-sizing: border-box;
+            line-height: 1.5;
+        }
+        #protokollInhalt textarea[data-manuell]:focus {
+            border-left-color: #9c27b0;
+            background: rgba(156, 39, 176, 0.02);
+        }
+        #protokollInhalt textarea[data-manuell]::placeholder {
+            color: #bbb;
+            font-style: italic;
+        }
+
         /* Kategorie-Status - zweispaltig für beide Prüfungsteile */
         .kategorie-status-bereich {
     padding: 8px 12px;
@@ -1557,7 +1584,7 @@
                     manuell.dataset.manuell = blockKey;
                     manuell.placeholder = 'Manuelle Ergänzung...';
                     manuell.value = quellTexte[blockKey] || '';
-                    manuell.rows = 2;
+                    manuell.rows = 4;
                     feld.appendChild(manuell);
                     autoResizeTextarea(manuell);
                     manuell.addEventListener('input', () => autoResizeTextarea(manuell));
