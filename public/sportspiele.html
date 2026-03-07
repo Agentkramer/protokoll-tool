@@ -805,6 +805,27 @@ if (sessionData.sport_type) {
                 // Einmaliger Auto-Save Listener auf protokollInhalt
                 const protokoll = document.getElementById('protokollInhalt');
                 if (protokoll) {
+
+                // Enter-Taste in manuellen Bereichen als <br> einfügen statt neuen Div zu klonen
+                protokoll.addEventListener('keydown', (e) => {
+                    if (e.key !== 'Enter') return;
+                    const target = e.target;
+                    if (!target.dataset || !target.dataset.manuell) return;
+                    e.preventDefault();
+                    const sel = window.getSelection();
+                    if (!sel.rangeCount) return;
+                    const range = sel.getRangeAt(0);
+                    range.deleteContents();
+                    const br = document.createElement('br');
+                    range.insertNode(br);
+                    // Cursor nach dem <br> setzen
+                    range.setStartAfter(br);
+                    range.setEndAfter(br);
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                    // Input-Event manuell triggern für Auto-Save
+                    target.dispatchEvent(new Event('input', { bubbles: true }));
+                });
                     protokoll.addEventListener('input', (e) => {
                         if (!e.target.dataset || !e.target.dataset.manuell) return;
                         clearTimeout(window._manuellSaveTimer);
