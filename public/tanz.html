@@ -1368,6 +1368,22 @@
                 .trim();
         }
 
+
+        function getProtokollText() {
+            const feld = document.getElementById('protokollInhalt');
+            let text = '';
+            feld.childNodes.forEach(node => {
+                if (node.tagName === 'TEXTAREA') {
+                    const val = node.value.trim();
+                    if (val) text += val + '\n';
+                } else if (node.nodeType === Node.TEXT_NODE) {
+                    text += node.textContent;
+                } else {
+                    text += node.innerText || node.textContent || '';
+                }
+            });
+            return text.trim();
+        }
         function autoResizeTextarea(ta) {
             ta.style.height = 'auto';
             ta.style.height = ta.scrollHeight + 'px';
@@ -1541,7 +1557,7 @@
                     manuell.dataset.manuell = blockKey;
                     manuell.placeholder = 'Manuelle Ergänzung...';
                     manuell.value = quellTexte[blockKey] || '';
-                    manuell.rows = 1;
+                    manuell.rows = 2;
                     feld.appendChild(manuell);
                     autoResizeTextarea(manuell);
                     manuell.addEventListener('input', () => autoResizeTextarea(manuell));
@@ -1713,7 +1729,7 @@
             
             try {
                 // Protokolltext aus Textarea holen (mit Überschriften)
-                const protokollText = document.getElementById('protokollInhalt').innerText;
+                const protokollText = getProtokollText();
                 
                 const response = await fetch('/api/generate', {
                     method: 'POST',
@@ -1839,7 +1855,7 @@
                 fachpruefungsleitung: document.getElementById('fachpruefungsleitung').value
             };
             
-            const protokollText = document.getElementById('protokollInhalt').innerText.trim();
+            const protokollText = getProtokollText();
             
             if (!protokollText || protokollText === 'Hier erscheinen die ausgewählten Textbausteine...') {
                 alert('Bitte erstellen Sie zuerst ein Protokoll!');
