@@ -1044,7 +1044,7 @@ if (sessionData.sport_type) {
                     manuell.style.minHeight = '1.7em';
                     manuell.style.paddingBottom = '4px';
                     manuell.style.outline = 'none';
-                    manuell.innerText = quellTexte[kategorie] || '';
+                    manuell.innerHTML = (quellTexte[kategorie] || '').replace(/\n/g, '<br>');
                     feld.appendChild(manuell);
                 }
             });
