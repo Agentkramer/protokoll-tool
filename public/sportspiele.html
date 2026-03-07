@@ -893,8 +893,9 @@ if (sessionData.sport_type) {
                 if (currentPruefling) {
                     const manuelleTexte = {};
                     document.querySelectorAll('[data-manuell]').forEach(m => {
-                        if (m.innerText.trim()) {
-                            manuelleTexte[m.dataset.manuell] = m.innerText;
+                        const txt = getManuellText(m);
+                        if (txt) {
+                            manuelleTexte[m.dataset.manuell] = txt;
                         }
                     });
                     if (Object.keys(manuelleTexte).length > 0) {
@@ -959,6 +960,19 @@ if (sessionData.sport_type) {
             });
         }
         
+
+        // Hilfsfunktion: innerHTML -> plain text mit Zeilenumbrüchen
+        function getManuellText(el) {
+            return el.innerHTML
+                .replace(/<br\s*\/?>/gi, '\n')
+                .replace(/<div>/gi, '\n')
+                .replace(/<\/div>/gi, '')
+                .replace(/&nbsp;/g, ' ')
+                .replace(/&amp;/g, '&')
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .trim();
+        }
         function toggleTextbaustein(kategorie, baustein, stufe) {
             // Wenn KI-Text vorhanden: Warnung anzeigen
             if (currentPruefling && currentPruefling.ai_text) {

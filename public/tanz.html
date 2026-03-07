@@ -1257,8 +1257,9 @@
             if (currentPruefling) {
                 const manuelleTexte = {};
                 document.querySelectorAll('[data-manuell]').forEach(m => {
-                    if (m.innerText.trim()) {
-                        manuelleTexte[m.dataset.manuell] = m.innerText;
+                    const txt = getManuellText(m);
+                        if (txt) {
+                            manuelleTexte[m.dataset.manuell] = txt;
                     }
                 });
                 if (Object.keys(manuelleTexte).length > 0) {
@@ -1320,6 +1321,19 @@
         }
         
         // ========== TEXTBAUSTEIN-ÄNDERUNG (Button-Stil) ==========
+
+        // Hilfsfunktion: innerHTML -> plain text mit Zeilenumbrüchen
+        function getManuellText(el) {
+            return el.innerHTML
+                .replace(/<br\s*\/?>/gi, '\n')
+                .replace(/<div>/gi, '\n')
+                .replace(/<\/div>/gi, '')
+                .replace(/&nbsp;/g, ' ')
+                .replace(/&amp;/g, '&')
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .trim();
+        }
         async function textbausteinToggle(button) {
             if (!currentPruefling) {
                 alert('Bitte erst Prüfling auswählen!');
@@ -1378,8 +1392,9 @@
                 // Manuelle Ergänzungen mitspeichern
                 const manuelleTexte = {};
                 document.querySelectorAll('[data-manuell]').forEach(el => {
-                    if (el.innerText.trim()) {
-                        manuelleTexte[el.dataset.manuell] = el.innerText;
+                    const txt = getManuellText(el);
+                        if (txt) {
+                            manuelleTexte[el.dataset.manuell] = txt;
                     }
                 });
                 if (Object.keys(manuelleTexte).length > 0) {
@@ -1431,7 +1446,7 @@
                 const key = block.dataset.bausteinBlock;
                 const naechster = block.nextSibling;
                 if (naechster && naechster.dataset && naechster.dataset.manuell) {
-                    manuelleTexte[key] = naechster.innerText;
+                    manuelleTexte[key] = getManuellText(naechster);
                 }
             });
 
@@ -1505,8 +1520,9 @@
                     window._manuellSaveTimer = setTimeout(() => {
                         const manuelleTexte = {};
                         document.querySelectorAll('[data-manuell]').forEach(m => {
-                            if (m.innerText.trim()) {
-                                manuelleTexte[m.dataset.manuell] = m.innerText;
+                            const txt = getManuellText(m);
+                        if (txt) {
+                            manuelleTexte[m.dataset.manuell] = txt;
                             }
                         });
                         const selectionsAktuell = currentPruefling.selections || { pflichtteil: {}, wahlpflichtteil: {} };
