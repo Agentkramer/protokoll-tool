@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tanz-Protokoll Tool (Alternative)</title>
+    <title>Tanz-Prüfungsprotokoll</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -591,7 +591,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>🩰 Tanz-Prüfungsprotokoll (Alternative UI)</h1>
+        <h1>💃🏼 Tanz-Prüfungsprotokoll</h1>
         <div class="header-actions">
             <button class="btn-header" style="background: #95a5a6; color: white;" onclick="zurueckZurAuswahl()">← Zurück</button>
             <button class="btn-header btn-end-session" onclick="sessionBeenden()">Prüfung beenden</button>
@@ -1274,7 +1274,11 @@
                 
                 // UI aktualisieren
                 document.getElementById('prueflingSelect').value = prueflingId;
-                
+
+                // Gespeicherte manuelle Texte für aktualisiereProtokoll bereitstellen
+                const selections = currentPruefling.selections || {};
+                window._geladeneManuellTexte = selections['_manuell'] || {};
+
                 // Aktuelle Kategorie neu rendern (wenn eine ausgewählt ist)
                 if (currentKategorie) {
                     renderAktuelleKategorie();
@@ -1326,6 +1330,17 @@
             
             // In DB speichern
             try {
+                // Manuelle Ergänzungen mitspeichern
+                const manuelleTexte = {};
+                document.querySelectorAll('[data-manuell]').forEach(el => {
+                    if (el.textContent.trim()) {
+                        manuelleTexte[el.dataset.manuell] = el.textContent;
+                    }
+                });
+                if (Object.keys(manuelleTexte).length > 0) {
+                    selections['_manuell'] = manuelleTexte;
+                }
+
                 const response = await fetch('/api/prueflings-update', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1358,43 +1373,89 @@
         
         // ========== PROTOKOLL AKTUALISIEREN ==========
         function aktualisiereProtokoll() {
+            const feld = document.getElementById('protokollInhalt');
+
             if (!currentPruefling || !currentPruefling.selections) {
-                document.getElementById('protokollInhalt').textContent = '';
+                feld.innerHTML = '';
                 return;
             }
-            
+
+            // Bestehende manuelle Ergänzungen aus dem Feld einsammeln
+            const manuelleTexte = {};
+            feld.querySelectorAll('[data-baustein-block]').forEach(block => {
+                const key = block.dataset.bausteinBlock;
+                const naechster = block.nextSibling;
+                if (naechster && naechster.dataset && naechster.dataset.manuell) {
+                    manuelleTexte[key] = naechster.textContent;
+                }
+            });
+
+            // Geladene Texte aus DB als Fallback
+            const quellTexte = Object.keys(manuelleTexte).length > 0
+                ? manuelleTexte
+                : (window._geladeneManuellTexte || {});
+
+            // Protokollfeld neu aufbauen
+            feld.innerHTML = '';
+            let hatInhalt = false;
             const selections = currentPruefling.selections;
-            let protokollText = '';
-            
-            // Pflichtteil
-            if (selections.pflichtteil && Object.keys(selections.pflichtteil).length > 0) {
-                protokollText += '=== PFLICHTTEIL ===\n\n';
+
+            const teile = [
+                { key: 'pflichtteil', label: '=== PFLICHTTEIL ===' },
+                { key: 'wahlpflichtteil', label: '=== WAHLPFLICHTTEIL ===' }
+            ];
+
+            teile.forEach(teil => {
+                if (!selections[teil.key] || Object.keys(selections[teil.key]).length === 0) return;
+
+                const hatBausteine = Object.values(selections[teil.key]).some(arr => arr.length > 0);
+                if (!hatBausteine) return;
+
+                hatInhalt = true;
+
+                // Überschrift Prüfungsteil
+                const header = document.createElement('span');
+                header.contentEditable = 'false';
+                header.style.display = 'block';
+                header.style.whiteSpace = 'pre-wrap';
+                header.style.fontWeight = 'bold';
+                header.textContent = teil.label + '\n';
+                feld.appendChild(header);
+
                 Object.entries(kategorien).forEach(([key, kategorie]) => {
-                    if (selections.pflichtteil[key] && selections.pflichtteil[key].length > 0) {
-                        protokollText += `${kategorie.name}:\n`;
-                        selections.pflichtteil[key].forEach(baustein => {
-                            protokollText += `• ${baustein}\n`;
-                        });
-                        protokollText += '\n';
-                    }
+                    if (!selections[teil.key][key] || selections[teil.key][key].length === 0) return;
+
+                    const blockKey = teil.key + '__' + key;
+
+                    // Auto-Block mit Marker
+                    const block = document.createElement('span');
+                    block.dataset.bausteinBlock = blockKey;
+                    block.contentEditable = 'false';
+                    block.style.display = 'block';
+                    block.style.whiteSpace = 'pre-wrap';
+                    block.textContent = kategorie.name + ':\n' +
+                        selections[teil.key][key].map(b => '• ' + b).join('\n') + '\n';
+                    feld.appendChild(block);
+
+                    // Manueller Ergänzungsbereich
+                    const manuell = document.createElement('span');
+                    manuell.dataset.manuell = blockKey;
+                    manuell.contentEditable = 'true';
+                    manuell.style.display = 'block';
+                    manuell.style.whiteSpace = 'pre-wrap';
+                    manuell.style.minHeight = '1.7em';
+                    manuell.style.paddingBottom = '4px';
+                    manuell.textContent = quellTexte[blockKey] || '';
+                    feld.appendChild(manuell);
                 });
-            }
-            
-            // Wahlpflichtteil
-            if (selections.wahlpflichtteil && Object.keys(selections.wahlpflichtteil).length > 0) {
-                protokollText += '=== WAHLPFLICHTTEIL ===\n\n';
-                Object.entries(kategorien).forEach(([key, kategorie]) => {
-                    if (selections.wahlpflichtteil[key] && selections.wahlpflichtteil[key].length > 0) {
-                        protokollText += `${kategorie.name}:\n`;
-                        selections.wahlpflichtteil[key].forEach(baustein => {
-                            protokollText += `• ${baustein}\n`;
-                        });
-                        protokollText += '\n';
-                    }
-                });
-            }
-            
-            document.getElementById('protokollInhalt').textContent = protokollText || '';
+            });
+
+            // DB-Texte verbraucht – zurücksetzen
+            window._geladeneManuellTexte = {};
+
+            // KI-Button aktivieren wenn Text vorhanden
+            const kiButton = document.getElementById('kiBtn');
+            if (kiButton) kiButton.disabled = !hatInhalt;
         }
         
         // ========== NOTEN BERECHNEN ==========
@@ -1554,7 +1615,7 @@
             
             try {
                 // Protokolltext aus Textarea holen (mit Überschriften)
-                const protokollText = document.getElementById('protokollInhalt').textContent;
+                const protokollText = document.getElementById('protokollInhalt').innerText;
                 
                 const response = await fetch('/api/generate', {
                     method: 'POST',
@@ -1569,7 +1630,12 @@
                 
                 if (data.success) {
                     // Text in Textarea einfügen
-                    document.getElementById('protokollInhalt').textContent = data.text;
+                    const feld = document.getElementById('protokollInhalt');
+                    feld.innerHTML = '';
+                    const textNode = document.createElement('span');
+                    textNode.style.whiteSpace = 'pre-wrap';
+                    textNode.textContent = data.text;
+                    feld.appendChild(textNode);
                 } else {
                     throw new Error(data.error || 'Fehler bei der Generierung');
                 }
@@ -1649,7 +1715,7 @@
                 fachpruefungsleitung: document.getElementById('fachpruefungsleitung').value
             };
             
-            const protokollText = document.getElementById('protokollInhalt').textContent.trim();
+            const protokollText = document.getElementById('protokollInhalt').innerText.trim();
             
             if (!protokollText || protokollText === 'Hier erscheinen die ausgewählten Textbausteine...') {
                 alert('Bitte erstellen Sie zuerst ein Protokoll!');
