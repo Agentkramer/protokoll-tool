@@ -1066,16 +1066,6 @@ if (sessionData.sport_type) {
             // DB-Texte verbraucht – zurücksetzen
             window._geladeneManuellTexte = {};
 
-            // Auto-Save bei manueller Eingabe (Debounce 1 Sek.)
-            feld.querySelectorAll('[data-manuell]').forEach(el => {
-                el.addEventListener('input', () => {
-                    clearTimeout(window._manuellSaveTimer);
-                    window._manuellSaveTimer = setTimeout(() => {
-                        speicherePrueflingDaten();
-                    }, 1000);
-                });
-            });
-            
             // KI-Button aktivieren wenn Text vorhanden
             const kiButton = document.getElementById('kiButton');
             kiButton.disabled = !hatInhalt;
@@ -1345,6 +1335,36 @@ if (sessionData.sport_type) {
                     if (e.key === 'Enter') {
                         prueflingHinzufuegen();
                     }
+                });
+            }
+
+            // Einmaliger Auto-Save Listener auf protokollInhalt (fängt alle inneren Divs via Bubbling)
+            const protokoll = document.getElementById('protokollInhalt');
+            if (protokoll) {
+                protokoll.addEventListener('input', (e) => {
+                    if (!e.target.dataset || !e.target.dataset.manuell) return;
+                    clearTimeout(window._manuellSaveTimer);
+                    window._manuellSaveTimer = setTimeout(() => {
+                        if (!currentPruefling && !currentPrueflingId) return;
+                        const manuelleTexte = {};
+                        document.querySelectorAll('[data-manuell]').forEach(m => {
+                            const txt = getManuellText(m);
+                            if (txt) manuelleTexte[m.dataset.manuell] = txt;
+                        });
+                        const selectionsAktuell = {};
+                        kategorien.forEach(kat => { selectionsAktuell[kat] = ausgewaehlteBausteine[kat]; });
+                        if (Object.keys(manuelleTexte).length > 0) {
+                            selectionsAktuell['_manuell'] = manuelleTexte;
+                        }
+                        fetch('/api/prueflings-update', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                prueflingId: currentPrueflingId,
+                                selections: selectionsAktuell
+                            })
+                        });
+                    }, 1000);
                 });
             }
         });
