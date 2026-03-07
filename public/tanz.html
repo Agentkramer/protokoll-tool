@@ -1475,32 +1475,32 @@
             // DB-Texte verbraucht – zurücksetzen
             window._geladeneManuellTexte = {};
 
-           // Auto-Save bei manueller Eingabe (Debounce 1 Sek.)
-feld.querySelectorAll('[data-manuell]').forEach(el => {
-    el.addEventListener('input', () => {
-        clearTimeout(window._manuellSaveTimer);
-        window._manuellSaveTimer = setTimeout(() => {
-            const manuelleTexte = {};
-            document.querySelectorAll('[data-manuell]').forEach(m => {
-                if (m.innerText.trim()) {
-                    manuelleTexte[m.dataset.manuell] = m.innerText;
-                }
+            // Auto-Save bei manueller Eingabe (Debounce 1 Sek.)
+            feld.querySelectorAll('[data-manuell]').forEach(el => {
+                el.addEventListener('input', () => {
+                    clearTimeout(window._manuellSaveTimer);
+                    window._manuellSaveTimer = setTimeout(() => {
+                        const manuelleTexte = {};
+                        document.querySelectorAll('[data-manuell]').forEach(m => {
+                            if (m.innerText.trim()) {
+                                manuelleTexte[m.dataset.manuell] = m.innerText;
+                            }
+                        });
+                        const selectionsAktuell = currentPruefling.selections || { pflichtteil: {}, wahlpflichtteil: {} };
+                        if (Object.keys(manuelleTexte).length > 0) {
+                            selectionsAktuell['_manuell'] = manuelleTexte;
+                        }
+                        fetch('/api/prueflings-update', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                prueflingId: currentPruefling.id,
+                                selections: selectionsAktuell
+                            })
+                        });
+                    }, 1000);
+                });
             });
-            const selectionsAktuell = currentPruefling.selections || { pflichtteil: {}, wahlpflichtteil: {} };
-            if (Object.keys(manuelleTexte).length > 0) {
-                selectionsAktuell['_manuell'] = manuelleTexte;
-            }
-            fetch('/api/prueflings-update', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    prueflingId: currentPruefling.id,
-                    selections: selectionsAktuell
-                })
-            });
-        }, 1000);
-    });
-});
 
             // KI-Button aktivieren wenn Text vorhanden
             const kiButton = document.getElementById('kiBtn');
