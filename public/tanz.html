@@ -1302,6 +1302,25 @@
                 alert('Bitte erst Prüfling auswählen!');
                 return;
             }
+
+            // Wenn KI-Text vorhanden: Warnung anzeigen
+            if (currentPruefling.ai_text) {
+                const bestaetigt = confirm(
+                    'Der KI-generierte Text wird verworfen und die Textbausteinliste neu aufgebaut.\n' +
+                    'Manuelle Ergänzungen gehen dabei verloren.\n\n' +
+                    'Fortfahren?'
+                );
+                if (!bestaetigt) return;
+                currentPruefling.ai_text = null;
+                fetch('/api/prueflings-update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prueflingId: currentPruefling.id,
+                        aiText: null
+                    })
+                });
+            }
             
             const kategorie = button.dataset.kategorie;
             const text = button.dataset.text;
@@ -1336,8 +1355,8 @@
                 // Manuelle Ergänzungen mitspeichern
                 const manuelleTexte = {};
                 document.querySelectorAll('[data-manuell]').forEach(el => {
-                    if (el.textContent.trim()) {
-                        manuelleTexte[el.dataset.manuell] = el.textContent;
+                    if (el.innerText.trim()) {
+                        manuelleTexte[el.dataset.manuell] = el.innerText;
                     }
                 });
                 if (Object.keys(manuelleTexte).length > 0) {
@@ -1389,7 +1408,7 @@
                 const key = block.dataset.bausteinBlock;
                 const naechster = block.nextSibling;
                 if (naechster && naechster.dataset && naechster.dataset.manuell) {
-                    manuelleTexte[key] = naechster.textContent;
+                    manuelleTexte[key] = naechster.innerText;
                 }
             });
 
@@ -1440,21 +1459,49 @@
                         selections[teil.key][key].map(b => '• ' + b).join('\n') + '\n';
                     feld.appendChild(block);
 
-                    // Manueller Ergänzungsbereich
-                    const manuell = document.createElement('span');
+                    // Manueller Ergänzungsbereich (div für mehrzeilige Eingabe)
+                    const manuell = document.createElement('div');
                     manuell.dataset.manuell = blockKey;
                     manuell.contentEditable = 'true';
-                    manuell.style.display = 'block';
                     manuell.style.whiteSpace = 'pre-wrap';
                     manuell.style.minHeight = '1.7em';
                     manuell.style.paddingBottom = '4px';
-                    manuell.textContent = quellTexte[blockKey] || '';
+                    manuell.style.outline = 'none';
+                    manuell.innerText = quellTexte[blockKey] || '';
                     feld.appendChild(manuell);
                 });
             });
 
             // DB-Texte verbraucht – zurücksetzen
             window._geladeneManuellTexte = {};
+
+            // Auto-Save bei manueller Eingabe (Debounce 1 Sek.)
+            feld.querySelectorAll('[data-manuell]').forEach(el => {
+                el.addEventListener('input', () => {
+                    clearTimeout(window._manuellSaveTimer);
+                    window._manuellSaveTimer = setTimeout(() => {
+                        // Manuelle Texte in selections einsammeln und speichern
+                        const manuelleTexte = {};
+                        document.querySelectorAll('[data-manuell]').forEach(m => {
+                            if (m.innerText.trim()) {
+                                manuelleTexte[m.dataset.manuell] = m.innerText;
+                            }
+                        });
+                        const selectionsAktuell = currentPruefling.selections || { pflichtteil: {}, wahlpflichtteil: {} };
+                        if (Object.keys(manuelleTexte).length > 0) {
+                            selectionsAktuell['_manuell'] = manuelleTexte;
+                        }
+                        fetch('/api/prueflings-update', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                prueflingId: currentPruefling.id,
+                                selections: selectionsAktuell
+                            })
+                        });
+                    }, 1000);
+                });
+            });
 
             // KI-Button aktivieren wenn Text vorhanden
             const kiButton = document.getElementById('kiBtn');

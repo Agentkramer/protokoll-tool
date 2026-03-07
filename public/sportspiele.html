@@ -935,6 +935,27 @@ if (sessionData.sport_type) {
         }
         
         function toggleTextbaustein(kategorie, baustein, stufe) {
+            // Wenn KI-Text vorhanden: Warnung anzeigen
+            if (currentPruefling && currentPruefling.ai_text) {
+                const bestaetigt = confirm(
+                    'Der KI-generierte Text wird verworfen und die Textbausteinliste neu aufgebaut.\n' +
+                    'Manuelle Ergänzungen gehen dabei verloren.\n\n' +
+                    'Fortfahren?'
+                );
+                if (!bestaetigt) return;
+
+                // KI-Text und manuelle Texte in DB löschen
+                currentPruefling.ai_text = null;
+                fetch('/api/prueflings-update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prueflingId: currentPrueflingId,
+                        aiText: null
+                    })
+                });
+            }
+
             const index = ausgewaehlteBausteine[kategorie].indexOf(baustein);
             
             if (index > -1) {
@@ -990,21 +1011,31 @@ if (sessionData.sport_type) {
                         ausgewaehlteBausteine[kategorie].map(b => '• ' + b).join('\n') + '\n';
                     feld.appendChild(block);
                     
-                    // Manueller Ergänzungsbereich
-                    const manuell = document.createElement('span');
+                    // Manueller Ergänzungsbereich (div für mehrzeilige Eingabe)
+                    const manuell = document.createElement('div');
                     manuell.dataset.manuell = kategorie;
                     manuell.contentEditable = 'true';
-                    manuell.style.display = 'block';
                     manuell.style.whiteSpace = 'pre-wrap';
                     manuell.style.minHeight = '1.7em';
                     manuell.style.paddingBottom = '4px';
-                    manuell.textContent = quellTexte[kategorie] || '';
+                    manuell.style.outline = 'none';
+                    manuell.innerText = quellTexte[kategorie] || '';
                     feld.appendChild(manuell);
                 }
             });
             
             // DB-Texte verbraucht – zurücksetzen
             window._geladeneManuellTexte = {};
+
+            // Auto-Save bei manueller Eingabe (Debounce 1 Sek.)
+            feld.querySelectorAll('[data-manuell]').forEach(el => {
+                el.addEventListener('input', () => {
+                    clearTimeout(window._manuellSaveTimer);
+                    window._manuellSaveTimer = setTimeout(() => {
+                        speicherePrueflingDaten();
+                    }, 1000);
+                });
+            });
             
             // KI-Button aktivieren wenn Text vorhanden
             const kiButton = document.getElementById('kiButton');
