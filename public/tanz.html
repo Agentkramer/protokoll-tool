@@ -1487,6 +1487,9 @@
                                 manuelleTexte[m.dataset.manuell] = m.innerText;
                             }
                         });
+                        console.log('Auto-Save _manuell:', JSON.stringify(manuelleTexte)); // <-- hier
+    // ...rest
+}, 1000);
                         const selectionsAktuell = currentPruefling.selections || { pflichtteil: {}, wahlpflichtteil: {} };
                         if (Object.keys(manuelleTexte).length > 0) {
                             selectionsAktuell['_manuell'] = manuelleTexte;
