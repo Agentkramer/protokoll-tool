@@ -77,10 +77,10 @@
         }
         
         .metadaten-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-        }
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
         
         .metadaten input, .metadaten select {
             padding: 6px 10px;
@@ -140,10 +140,10 @@
         
         /* Kategorie-Status - zweispaltig für beide Prüfungsteile */
         .kategorie-status-bereich {
-            padding: 12px;
-            border-top: 2px solid #ecf0f1;
-            background: #fafafa;
-        }
+    padding: 8px 12px;
+    border-top: 2px solid #ecf0f1;
+    background: #fafafa;
+}
         
         .kategorie-status-titel {
             font-size: 12px;
@@ -174,22 +174,23 @@
             border-bottom: 1px solid #ecf0f1;
         }
         
-        .kategorie-liste {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            margin-bottom: 10px;
-        }
-        
-        .kategorie-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px;
-            background: #fafafa;
-            border-radius: 4px;
-            border: 1px solid #ecf0f1;
-        }
+       .kategorie-liste {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 8px;
+}
+
+.kategorie-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 6px;
+    background: #fafafa;
+    border-radius: 4px;
+    border: 1px solid #ecf0f1;
+}
         
         .kategorie-icon {
             width: 20px;
