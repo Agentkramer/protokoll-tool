@@ -1128,7 +1128,7 @@ if (sessionData.sport_type) {
             }
             
             try {
-                await fetch('/api/prueflings/update', {
+                await fetch('/api/prueflings-update', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -1179,7 +1179,7 @@ if (sessionData.sport_type) {
                     feld.appendChild(textNode);
                     
                     // AI-Text in DB speichern
-                    await fetch('/api/prueflings/update', {
+                    await fetch('/api/prueflings-update', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -1219,7 +1219,7 @@ if (sessionData.sport_type) {
             }
             
             try {
-                const response = await fetch('/api/prueflings/create', {
+                const response = await fetch('/api/prueflings-create', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
