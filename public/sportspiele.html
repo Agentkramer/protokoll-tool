@@ -862,6 +862,9 @@ if (sessionData.sport_type) {
                 }
             });
 
+            // Protokollfeld leeren damit alte DOM-Inhalte nicht fälschlich übernommen werden
+            document.getElementById('protokollInhalt').innerHTML = '';
+
             // Gespeicherte manuelle Texte für aktualisiereProtokolltext bereitstellen
             window._geladeneManuellTexte = selections['_manuell'] || {};
 
@@ -1171,19 +1174,37 @@ if (sessionData.sport_type) {
                 const data = await response.json();
                 
                 if (response.ok && data.success) {
-                    // KI-Text als plain text ins Feld – ab jetzt frei editierbar
+                    // Manuelle Ergänzungen vor KI-Überschreibung sichern
+                    const manuelleTexte = {};
+                    feld.querySelectorAll('[data-manuell]').forEach(el => {
+                        if (el.textContent.trim()) {
+                            manuelleTexte[el.dataset.manuell] = el.textContent;
+                        }
+                    });
+
+                    // KI-Text ins Feld laden – ab jetzt frei editierbar
                     feld.innerHTML = '';
                     const textNode = document.createElement('span');
                     textNode.style.whiteSpace = 'pre-wrap';
                     textNode.textContent = data.text;
                     feld.appendChild(textNode);
-                    
-                    // AI-Text in DB speichern
+
+                    // Aktuelle selections für DB-Speicherung holen
+                    const selectionsAktuell = {};
+                    kategorien.forEach(kat => {
+                        selectionsAktuell[kat] = ausgewaehlteBausteine[kat];
+                    });
+                    if (Object.keys(manuelleTexte).length > 0) {
+                        selectionsAktuell['_manuell'] = manuelleTexte;
+                    }
+
+                    // AI-Text + manuelle Texte in DB speichern
                     await fetch('/api/prueflings-update', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             prueflingId: currentPrueflingId,
+                            selections: selectionsAktuell,
                             aiText: data.text
                         })
                     });

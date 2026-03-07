@@ -1275,6 +1275,9 @@
                 // UI aktualisieren
                 document.getElementById('prueflingSelect').value = prueflingId;
 
+                // Protokollfeld leeren damit alte DOM-Inhalte nicht fälschlich übernommen werden
+                document.getElementById('protokollInhalt').innerHTML = '';
+
                 // Gespeicherte manuelle Texte für aktualisiereProtokoll bereitstellen
                 const selections = currentPruefling.selections || {};
                 window._geladeneManuellTexte = selections['_manuell'] || {};
@@ -1629,13 +1632,38 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    // Text in Textarea einfügen
                     const feld = document.getElementById('protokollInhalt');
+
+                    // Manuelle Ergänzungen vor KI-Überschreibung sichern
+                    const manuelleTexte = {};
+                    feld.querySelectorAll('[data-manuell]').forEach(el => {
+                        if (el.textContent.trim()) {
+                            manuelleTexte[el.dataset.manuell] = el.textContent;
+                        }
+                    });
+
+                    // KI-Text ins Feld laden
                     feld.innerHTML = '';
                     const textNode = document.createElement('span');
                     textNode.style.whiteSpace = 'pre-wrap';
                     textNode.textContent = data.text;
                     feld.appendChild(textNode);
+
+                    // Selections + manuelle Texte + AI-Text in DB speichern
+                    const selectionsAktuell = currentPruefling.selections || { pflichtteil: {}, wahlpflichtteil: {} };
+                    if (Object.keys(manuelleTexte).length > 0) {
+                        selectionsAktuell['_manuell'] = manuelleTexte;
+                    }
+                    await fetch('/api/prueflings-update', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            prueflingId: currentPruefling.id,
+                            selections: selectionsAktuell,
+                            aiText: data.text
+                        })
+                    });
+                    currentPruefling.selections = selectionsAktuell;
                 } else {
                     throw new Error(data.error || 'Fehler bei der Generierung');
                 }
