@@ -123,16 +123,8 @@
             font-size: 13px;
             line-height: 1.7;
             background: #fafafa;
+            white-space: pre-wrap;
             overflow-y: auto;
-        }
-        
-        #protokollInhalt [data-baustein-block] {
-            color: #333;
-        }
-        
-        #protokollInhalt [data-manuell] {
-            color: #333;
-            outline: none;
         }
         
         #protokollInhalt:empty::before {
@@ -864,12 +856,7 @@ if (sessionData.sport_type) {
             
             // AI-Text laden wenn vorhanden
             if (currentPruefling.ai_text) {
-                const feld = document.getElementById('protokollInhalt');
-                feld.innerHTML = '';
-                const textNode = document.createElement('span');
-                textNode.style.whiteSpace = 'pre-wrap';
-                textNode.textContent = currentPruefling.ai_text;
-                feld.appendChild(textNode);
+                document.getElementById('protokollInhalt').textContent = currentPruefling.ai_text;
             } else {
                 aktualisiereProtokolltext();
             }
@@ -947,54 +934,23 @@ if (sessionData.sport_type) {
         }
         
         function aktualisiereProtokolltext() {
-            const feld = document.getElementById('protokollInhalt');
-            
-            // Bestehende manuelle Ergänzungen pro Kategorie einsammeln
-            const manuelleTexte = {};
-            feld.querySelectorAll('[data-baustein-block]').forEach(block => {
-                const kat = block.dataset.bausteinBlock;
-                const naechster = block.nextSibling;
-                if (naechster && naechster.nodeType === Node.TEXT_NODE) {
-                    manuelleTexte[kat] = naechster.textContent;
-                } else if (naechster && naechster.dataset && naechster.dataset.manuell) {
-                    manuelleTexte[kat] = naechster.textContent;
-                }
-            });
-            
-            // Protokollfeld neu aufbauen
-            feld.innerHTML = '';
-            let hatInhalt = false;
+            let text = '';
             
             kategorien.forEach(kategorie => {
                 if (ausgewaehlteBausteine[kategorie].length > 0) {
-                    hatInhalt = true;
-                    
-                    // Auto-Block mit Marker
-                    const block = document.createElement('span');
-                    block.dataset.bausteinBlock = kategorie;
-                    block.contentEditable = 'false';
-                    block.style.display = 'block';
-                    block.style.whiteSpace = 'pre-wrap';
-                    block.textContent = kategorie + ':\n' +
-                        ausgewaehlteBausteine[kategorie].map(b => '• ' + b).join('\n') + '\n';
-                    feld.appendChild(block);
-                    
-                    // Manueller Ergänzungsbereich
-                    const manuell = document.createElement('span');
-                    manuell.dataset.manuell = kategorie;
-                    manuell.contentEditable = 'true';
-                    manuell.style.display = 'block';
-                    manuell.style.whiteSpace = 'pre-wrap';
-                    manuell.style.minHeight = '1.7em';
-                    manuell.style.paddingBottom = '4px';
-                    manuell.textContent = manuelleTexte[kategorie] || '';
-                    feld.appendChild(manuell);
+                    text += kategorie + ':\n';
+                    ausgewaehlteBausteine[kategorie].forEach(baustein => {
+                        text += '• ' + baustein + '\n';
+                    });
+                    text += '\n';
                 }
             });
             
+            document.getElementById('protokollInhalt').textContent = text.trim();
+            
             // KI-Button aktivieren wenn Text vorhanden
             const kiButton = document.getElementById('kiButton');
-            kiButton.disabled = !hatInhalt;
+            kiButton.disabled = !text.trim();
         }
         
         // ========== KATEGORIE-STATUS & NOTEN ==========
@@ -1122,9 +1078,7 @@ if (sessionData.sport_type) {
         
         // ========== KI-GENERIERUNG ==========
         async function generiereFliesstextMitKI() {
-            // Gesamten Text aus dem Protokollfeld holen (Bausteine + manuelle Ergänzungen)
-            const feld = document.getElementById('protokollInhalt');
-            const protokollText = feld.innerText.trim();
+            const protokollText = document.getElementById('protokollInhalt').textContent.trim();
             
             if (!protokollText || protokollText === 'Hier erscheinen die ausgewählten Textbausteine...') {
                 alert('Bitte wählen Sie zuerst Textbausteine aus!');
@@ -1149,12 +1103,7 @@ if (sessionData.sport_type) {
                 const data = await response.json();
                 
                 if (response.ok && data.success) {
-                    // KI-Text als plain text ins Feld – ab jetzt frei editierbar
-                    feld.innerHTML = '';
-                    const textNode = document.createElement('span');
-                    textNode.style.whiteSpace = 'pre-wrap';
-                    textNode.textContent = data.text;
-                    feld.appendChild(textNode);
+                    document.getElementById('protokollInhalt').textContent = data.text;
                     
                     // AI-Text in DB speichern
                     await fetch('/api/prueflings/update', {
@@ -1246,7 +1195,7 @@ if (sessionData.sport_type) {
                 fachpruefungsleitung: document.getElementById('fachpruefungsleitung').value
             };
             
-            const protokollText = document.getElementById('protokollInhalt').innerText.trim();
+            const protokollText = document.getElementById('protokollInhalt').textContent.trim();
             
             if (!protokollText || protokollText === 'Hier erscheinen die ausgewählten Textbausteine...') {
                 alert('Bitte erstellen Sie zuerst ein Protokoll!');
