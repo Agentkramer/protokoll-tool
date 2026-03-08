@@ -1303,7 +1303,7 @@ if (sessionData.sport_type) {
                         'Content-Type': 'application/json',
                         'Authorization': 'Bearer ' + sessionStorage.getItem('authenticated')
                     },
-                    body: JSON.stringify({ protokollText })
+                    body: JSON.stringify({ protokollText, examType: 'sportspiele' })
                 });
                 
                 const data = await response.json();
