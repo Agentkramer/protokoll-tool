@@ -22,6 +22,9 @@ module.exports = async (req, res) => {
 
   const { protokollText, examType } = req.body;
 
+const { protokollText, examType } = req.body;
+console.log('examType received:', examType);
+
   if (!protokollText) {
     return res.status(400).json({ error: 'Protokolltext erforderlich' });
   }
