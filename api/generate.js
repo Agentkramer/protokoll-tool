@@ -20,8 +20,6 @@ module.exports = async (req, res) => {
     return res.status(500).json({ error: 'API-Key nicht konfiguriert' });
   }
 
-  const { protokollText, examType } = req.body;
-
 const { protokollText, examType } = req.body;
 console.log('examType received:', examType);
 
