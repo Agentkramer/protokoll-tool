@@ -30,32 +30,34 @@ module.exports = async (req, res) => {
     let prompt;
 
     if (examType === 'sportspiele') {
-      prompt = `Du bist Protokollant bei einer Sportspiele-Prüfung. Erstelle einen professionellen Fließtext aus den folgenden Textbausteinen.
+      prompt = `Du bist Protokollant bei einer Sportspiele-Prüfung. Deine Aufgabe ist es, die folgenden Textbausteine in einen Fließtext umzuformen.
 
-STRUKTUR:
-- Der Input enthält drei Prüfungsteile: Teil 1 (30%), Teil 2 (30%), Teil 3 (40%)
-- Behalte die Überschriften der Prüfungsteile exakt so bei, wie sie im Input stehen
-- Gliedere jeden Teil in einen zusammenhängenden Absatz
-- KEINE Kategorienamen als Überschriften
-- KEINE Markdown-Formatierung (keine **, keine ###)
+STRIKTE REGELN:
+1. Der Input ist in genau drei Teile gegliedert. Jeder Teil beginnt mit einer Zeile wie "Teil 1: ...", "Teil 2: ...", "Teil 3: ..."
+2. Übernimm diese Überschriften EXAKT so wie sie im Input stehen - ändere sie nicht, erfinde keine neuen
+3. Schreibe für jeden Teil einen zusammenhängenden Absatz aus den Textbausteinen dieses Teils
+4. Verwende NUR die Inhalte aus dem jeweiligen Teil - vermische die Teile NICHT
+5. Erfinde KEINE zusätzlichen Kategorien, Bewertungskriterien oder Inhalte die nicht im Input stehen
+6. KEINE Tanz-Begriffe (Improvisation, Gestaltung, Musikalität, Ausdruck, Pflichtteil, Wahlpflichtteil)
+7. Keine Markdown-Formatierung (keine **, keine ###, keine ---)
 
-FORMULIERUNG:
-- Nutze die Textbausteine als inhaltliche Grundlage
-- Passe die Grammatik an, damit die Sätze korrekt und fließend sind (z.B. Nominalisierungen, Verbformen, Artikel)
-- Verbinde mehrere Aspekte zu zusammenhängenden Sätzen
-- Vermeide Aufzählungen - formuliere in ganzen, natürlichen Sätzen
-- WICHTIG: Erfinde keine Bewertungen oder Details, die nicht in den Bausteinen enthalten sind
+FORMAT DER AUSGABE:
+[Überschrift Teil 1 exakt aus Input]
 
-FORMAT:
-- Nur reiner Text, keine Formatierungen
-- Prüfungsteil-Überschriften exakt aus dem Input übernehmen
-- Absätze durch Leerzeilen trennen
-- Keine **, keine #, keine Markdown-Syntax
+[Fließtext für Teil 1]
 
-Textbausteine (nach Prüfungsteilen geordnet):
+[Überschrift Teil 2 exakt aus Input]
+
+[Fließtext für Teil 2]
+
+[Überschrift Teil 3 exakt aus Input]
+
+[Fließtext für Teil 3]
+
+Textbausteine:
 ${protokollText}
 
-Erstelle daraus einen grammatikalisch korrekten, gut strukturierten Protokolltext in Absatzform.`;
+Schreibe jetzt den Protokolltext. Halte dich strikt an die drei Teile und ihre Überschriften aus dem Input.`;
 
     } else {
       // Standard: Tanz
