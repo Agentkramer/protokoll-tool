@@ -1097,10 +1097,9 @@ if (sessionData.sport_type) {
             feld.querySelectorAll('[data-baustein-block]').forEach(block => {
                 const kat = block.dataset.bausteinBlock;
                 const naechster = block.nextSibling;
-                if (naechster && naechster.nodeType === Node.TEXT_NODE) {
-                    manuelleTexte[kat] = naechster.textContent;
-                } else if (naechster && naechster.dataset && naechster.dataset.manuell) {
-                    manuelleTexte[kat] = naechster.textContent;
+                if (naechster && naechster.dataset && naechster.dataset.manuell) {
+                    const txt = getManuellText(naechster);
+                    if (txt) manuelleTexte[kat] = txt;
                 }
             });
             
