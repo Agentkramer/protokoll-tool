@@ -641,6 +641,12 @@
             "Teil 2: Technische Fertigkeiten (offenes Programm)",
             "Teil 3: Spielfähigkeit"
         ];
+        // Anzeigenamen mit Gewichtung (für Protokolltext und KI-Prompt)
+        const kategorienMitGewichtung = {
+            "Teil 1: Technische Fertigkeiten (festgelegtes Programm)": "Teil 1: Technische Fertigkeiten (festgelegtes Programm) (30%)",
+            "Teil 2: Technische Fertigkeiten (offenes Programm)": "Teil 2: Technische Fertigkeiten (offenes Programm) (30%)",
+            "Teil 3: Spielfähigkeit": "Teil 3: Spielfähigkeit (40%)"
+        };
         
         // Sportart-Icons
         const sportIcons = {
@@ -816,10 +822,15 @@ if (sessionData.sport_type) {
                 
                 // Kategorien initialisieren
                 const kategorieSelect = document.getElementById('kategorieSelect');
+                const gewichtungen = {
+                    "Teil 1: Technische Fertigkeiten (festgelegtes Programm)": "30%",
+                    "Teil 2: Technische Fertigkeiten (offenes Programm)": "30%",
+                    "Teil 3: Spielfähigkeit": "40%"
+                };
                 kategorien.forEach(kategorie => {
                     const option = document.createElement('option');
                     option.value = kategorie;
-                    option.textContent = kategorie;
+                    option.textContent = `${kategorie} (${gewichtungen[kategorie]})`;
                     kategorieSelect.appendChild(option);
                 });
                 
@@ -1122,7 +1133,8 @@ if (sessionData.sport_type) {
                     block.contentEditable = 'false';
                     block.style.display = 'block';
                     block.style.whiteSpace = 'pre-wrap';
-                    block.textContent = kategorie + ':\n' +
+                    const kategorieLabel = kategorienMitGewichtung[kategorie] || kategorie;
+                    block.textContent = kategorieLabel + ':\n' +
                         ausgewaehlteBausteine[kategorie].map(b => '• ' + b).join('\n') + '\n';
                     feld.appendChild(block);
                     
@@ -1193,11 +1205,17 @@ if (sessionData.sport_type) {
                     }
                 }
                 
+                const gewichtungsMap = {
+                    "Teil 1: Technische Fertigkeiten (festgelegtes Programm)": "30%",
+                    "Teil 2: Technische Fertigkeiten (offenes Programm)": "30%",
+                    "Teil 3: Spielfähigkeit": "40%"
+                };
+                const gewichtLabel = gewichtungsMap[kategorie] ? ` <span style="color:#999;font-size:0.85em">(${gewichtungsMap[kategorie]})</span>` : '';
                 item.innerHTML = `
                     <div class="kategorie-icon ${bewertet ? 'bewertet' : 'nicht-bewertet'}">
                         ${bewertet ? '✓' : '○'}
                     </div>
-                    <div class="kategorie-name">${kategorie}</div>
+                    <div class="kategorie-name">${kategorie}${gewichtLabel}</div>
                     <div class="kategorie-note ${bewertet ? 'bewertet' : 'nicht-bewertet'}">${punkte}</div>
                 `;
                 
@@ -1303,7 +1321,7 @@ if (sessionData.sport_type) {
                         'Content-Type': 'application/json',
                         'Authorization': 'Bearer ' + sessionStorage.getItem('authenticated')
                     },
-                    body: JSON.stringify({ protokollText })
+                    body: JSON.stringify({ protokollText, examType: 'sportspiele' })
                 });
                 
                 const data = await response.json();
