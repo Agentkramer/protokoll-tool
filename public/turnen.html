@@ -656,8 +656,11 @@
                 <button class="btn btn-ki" id="kiButton" onclick="generiereFliesstextMitKI()" disabled>
                     ✨ KI-Fließtext generieren
                 </button>
-                <button class="btn btn-primary" onclick="exportPDF()">
+                <button class="btn btn-primary" onclick="exportPDF(true)">
                     📄 Als PDF exportieren
+                </button>
+                <button class="btn btn-primary" style="background: #7f8c8d;" onclick="exportPDF(false)">
+                    📄 PDF ohne Bewertung
                 </button>
             </div>
         </div>
@@ -725,74 +728,44 @@
             'V':  [0,0,0,0,0,0,1,2, 2, 3, 3, 4, 4, 5, 5, 5]
         };
 
-        // ========== TEXTBAUSTEINE – Ausführungsqualität (allgemein für alle Geräte) ==========
+        // ========== TEXTBAUSTEINE – Ausführungsqualität (aus den offiziellen Notendefinitionen) ==========
         const textbausteine = {
             "Sehr gut (15–13 Punkte)": [
-                "Die Übung wird in besonderem Maße sicher und fließend ausgeführt",
-                "Alle Einzelelemente werden technisch einwandfrei beherrscht",
-                "Der Bewegungsfluss ist durchgehend rhythmisch und harmonisch",
-                "Die Körperhaltung bleibt auch in schwierigen Passagen stabil und korrekt",
-                "Übergänge zwischen den Elementen gelingen nahtlos und ohne Unterbrechung",
-                "Kleinere Haltungsmängel beeinträchtigen den Gesamteindruck nicht",
-                "Die Ausführung zeugt von hoher körperlicher Kontrolle und Bewegungssicherheit",
-                "Der Rhythmus wird konsequent und präzise eingehalten",
-                "Die Übung wirkt insgesamt souverän und ästhetisch überzeugend",
-                "Die Beherrschung der technischen Anforderungen ist deutlich erkennbar"
+                "Die Übung entspricht den o. g. Kriterien in besonderem Maße",
+                "Die einzelnen Elemente werden sicher beherrscht",
+                "Die Übung wird fließend und mit rhythmischer Betonung geturnt",
+                "Der Gesamteindruck wird auch durch kleinere Haltungsmängel nicht beeinträchtigt"
             ],
             "Gut (12–10 Punkte)": [
-                "Die Übung wird flüssig und mit erkennbarem Rhythmus ausgeführt",
-                "Die meisten Elemente werden sicher beherrscht",
-                "Kleinere Mängel in Haltung oder Technik treten vereinzelt auf, beeinträchtigen aber den Gesamteindruck nicht wesentlich",
-                "Der Bewegungsfluss ist weitgehend erhalten",
-                "Die Körperhaltung ist überwiegend korrekt",
-                "Die Übergänge gelingen in der Regel ohne größere Unterbrechungen",
-                "Die technische Ausführung entspricht den Anforderungen gut",
-                "Rhythmische Betonung ist erkennbar und trägt zum Gesamteindruck bei",
-                "Die Übung hinterlässt einen insgesamt positiven Eindruck",
-                "Die turnerischen Grundanforderungen werden zuverlässig erfüllt"
+                "Die Übung entspricht den o. g. Kriterien voll",
+                "In der Beherrschung der einzelnen Elemente treten zwar kleinere Mängel auf",
+                "In der Haltung treten kleinere Mängel auf",
+                "Die Übung wird noch fließend und mit rhythmischer Betonung geturnt",
+                "Der Gesamteindruck wird nicht wesentlich beeinträchtigt"
             ],
             "Befriedigend (9–7 Punkte)": [
-                "Die Übung entspricht im Allgemeinen den Kriterien, weist jedoch wiederholt Unsicherheiten auf",
-                "Bewegungsfluss und -rhythmus werden durch einzelne Fehler leicht beeinträchtigt",
-                "Der gesamte Bewegungsablauf kann noch als zusammenhängend angesehen werden",
-                "Die Körperhaltung zeigt Mängel, die den Gesamteindruck beeinflussen",
-                "Einzelne Elemente werden mit erkennbaren Schwierigkeiten ausgeführt",
-                "Die technische Kontrolle ist stellenweise eingeschränkt",
-                "Übergänge gelingen nicht durchgehend flüssig",
-                "Der Rhythmus wird nicht konsequent gehalten",
-                "Die Beherrschung der Elemente schwankt im Verlauf der Übung",
-                "Die Ausführung ist solide, aber ohne ausgeprägte Stärken"
+                "Die Übung entspricht im Allgemeinen den o. g. Kriterien",
+                "In der Beherrschung der einzelnen Elemente treten wiederholt Unsicherheiten auf",
+                "Bewegungsfluss und -rhythmus werden dadurch nur leicht beeinträchtigt",
+                "Der gesamte Bewegungsablauf kann noch als zusammenhängend angesehen werden"
             ],
             "Ausreichend (6–4 Punkte)": [
-                "Die Übung lässt deutliche Mängel in der Beherrschung der Einzelelemente erkennen",
-                "Der Bewegungsfluss wird durch Fehler spürbar unterbrochen",
-                "Haltungsmängel treten mehrfach und deutlich auf",
-                "Der Bewegungsablauf kann gerade noch als zusammenhängend angesehen werden",
-                "Die technische Ausführung entspricht den Anforderungen nur teilweise",
-                "Unsicherheiten in der Körperkontrolle sind erkennbar",
-                "Einzelne Elemente werden nur unvollständig ausgeführt",
-                "Rhythmische Gestaltung ist kaum vorhanden",
-                "Die Übung zeigt den Lernstand, bleibt aber deutlich hinter den Anforderungen zurück",
-                "Kompensationsversuche gelingen nur bedingt"
+                "Die Übung lässt Mängel in der Beherrschung der einzelnen Elemente erkennen",
+                "In der Haltung treten deutlich Mängel auf",
+                "Der Bewegungsfluss wird unterbrochen",
+                "Der gesamte Bewegungsablauf kann noch als zusammenhängend angesehen werden"
             ],
             "Mangelhaft (3–1 Punkte)": [
-                "Die Übung entspricht den Kriterien im Allgemeinen nicht mehr",
+                "Die Übung entspricht den o. g. Kriterien im Allgemeinen nicht mehr",
+                "In der Beherrschung der einzelnen Elemente treten deutliche Mängel auf",
                 "Der Bewegungsfluss wird mehrfach unterbrochen",
-                "Ein erkennbarer Bewegungsrhythmus ist nicht mehr feststellbar",
-                "Der Bewegungsablauf ist insgesamt gestört",
-                "Deutliche Mängel in der Beherrschung der Einzelelemente treten durchgehend auf",
-                "Die Körperhaltung ist überwiegend fehlerhaft",
-                "Grundlegende technische Anforderungen werden nicht erfüllt",
-                "Die Ausführung wirkt unsicher und unkontrolliert",
-                "Mehrere Elemente scheitern oder müssen abgebrochen werden",
-                "Der Zusammenhang der Übung ist kaum noch erkennbar"
+                "Ein Bewegungsrhythmus ist nicht mehr zu erkennen",
+                "Der Bewegungsablauf ist insgesamt gestört"
             ],
             "Ungenügend (0 Punkte)": [
-                "Die Übung entspricht den Kriterien nicht",
-                "Die Elemente werden überwiegend schlecht oder gar nicht ausgeführt",
-                "Ein Gesamtzusammenhang ist nicht zu erkennen",
-                "Grundlegende Bewegungsanforderungen können nicht erfüllt werden",
-                "Die turnerischen Mindestanforderungen werden nicht ansatzweise erreicht"
+                "Die Übung entspricht nicht den o. g. Kriterien",
+                "Die Elemente werden überwiegend schlecht geturnt",
+                "Ein Gesamtzusammenhang ist nicht zu erkennen"
             ]
         };
 
@@ -1275,7 +1248,7 @@
         }
 
         // ========== PDF EXPORT ==========
-        function exportPDF() {
+        function exportPDF(mitBewertung = true) {
             const metadaten = {
                 datum: document.getElementById('datum').value,
                 pruefling: currentPruefling ? currentPruefling.name : '',
@@ -1339,40 +1312,42 @@
                 doc.line(margin, y, margin + maxWidth, y);
                 y += lineHeight * 1.5;
 
-                // Gerätebewertung-Tabelle
-                doc.setFontSize(11);
-                doc.setFont(undefined, 'bold');
-                doc.text('Gerätebewertung:', margin, y);
-                y += lineHeight;
+                // Gerätebewertung-Tabelle (nur wenn mitBewertung)
+                if (mitBewertung) {
+                    doc.setFontSize(11);
+                    doc.setFont(undefined, 'bold');
+                    doc.text('Gerätebewertung:', margin, y);
+                    y += lineHeight;
 
-                doc.setFontSize(10);
-                doc.setFont(undefined, 'normal');
-                for (let i = 1; i <= 3; i++) {
-                    const g = geraeteDaten[i];
-                    if (g.name) {
-                        let zeile = `Gerät ${i}: ${g.name}`;
-                        if (g.schwierigkeit) zeile += `  |  Stufe: ${g.schwierigkeit}`;
-                        if (g.ausfuehrung !== null) zeile += `  |  Ausführung: ${g.ausfuehrung} Pkt`;
-                        if (g.endpunkte !== null) zeile += `  |  Endpunkte: ${g.endpunkte}`;
-                        doc.text(zeile, margin, y);
+                    doc.setFontSize(10);
+                    doc.setFont(undefined, 'normal');
+                    for (let i = 1; i <= 3; i++) {
+                        const g = geraeteDaten[i];
+                        if (g.name) {
+                            let zeile = `Gerät ${i}: ${g.name}`;
+                            if (g.schwierigkeit) zeile += `  |  Stufe: ${g.schwierigkeit}`;
+                            if (g.ausfuehrung !== null) zeile += `  |  Ausführung: ${g.ausfuehrung} Pkt`;
+                            if (g.endpunkte !== null) zeile += `  |  Endpunkte: ${g.endpunkte}`;
+                            doc.text(zeile, margin, y);
+                            y += lineHeight;
+                        }
+                    }
+
+                    // Endnote
+                    const ep = [1,2,3].map(i => geraeteDaten[i].endpunkte);
+                    if (ep.every(p => p !== null && p !== undefined)) {
+                        const endnote = Math.round((ep[0] + ep[1] + ep[2]) / 3);
+                        doc.setFont(undefined, 'bold');
+                        doc.text(`Endnote (gerundet): ${endnote} Punkte`, margin, y);
+                        doc.setFont(undefined, 'normal');
                         y += lineHeight;
                     }
-                }
 
-                // Endnote
-                const ep = [1,2,3].map(i => geraeteDaten[i].endpunkte);
-                if (ep.every(p => p !== null && p !== undefined)) {
-                    const endnote = Math.round((ep[0] + ep[1] + ep[2]) / 3);
-                    doc.setFont(undefined, 'bold');
-                    doc.text(`Endnote (gerundet): ${endnote} Punkte`, margin, y);
-                    doc.setFont(undefined, 'normal');
-                    y += lineHeight;
+                    y += lineHeight * 0.5;
+                    doc.setLineWidth(0.5);
+                    doc.line(margin, y, margin + maxWidth, y);
+                    y += lineHeight * 1.5;
                 }
-
-                y += lineHeight * 0.5;
-                doc.setLineWidth(0.5);
-                doc.line(margin, y, margin + maxWidth, y);
-                y += lineHeight * 1.5;
 
                 // Protokolltext
                 doc.setFontSize(10);
@@ -1404,9 +1379,10 @@
                 doc.setLineWidth(0.3);
                 doc.line(rightCol, y + lineHeight * 1.5 + 20, rightCol + colWidth, y + lineHeight * 1.5 + 20);
 
+                const suffix = mitBewertung ? '' : '_ohneBewertung';
                 const filename = metadaten.pruefling
-                    ? 'Protokoll_Turnen_' + metadaten.pruefling.replace(/[^a-zA-Z0-9_-]/g, '_') + '.pdf'
-                    : 'Pruefungsprotokoll_Turnen.pdf';
+                    ? `Protokoll_Turnen_${metadaten.pruefling.replace(/[^a-zA-Z0-9_-]/g, '_')}${suffix}.pdf`
+                    : `Pruefungsprotokoll_Turnen${suffix}.pdf`;
                 doc.save(filename);
 
             } catch (error) {
