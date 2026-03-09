@@ -1,0 +1,1499 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turnen-Protokoll Tool</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 12px 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 { font-size: 20px; }
+        
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-header {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .btn-end-session {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .logout-btn {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .protokoll-bereich {
+            flex: 2;
+            background: white;
+            margin: 20px;
+            margin-right: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .metadaten {
+            padding: 12px;
+            border-bottom: 2px solid #ecf0f1;
+            background: #fafafa;
+        }
+        
+        .metadaten input, .metadaten select {
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+            background: #e8e8e8;
+            color: #666;
+        }
+        
+        .metadaten input:disabled, .metadaten select:disabled {
+            cursor: not-allowed;
+        }
+        
+        .protokoll-text {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .protokoll-text h2 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        #protokollInhalt {
+            flex: 1;
+            padding: 12px;
+            border: 2px dashed #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            line-height: 1.7;
+            background: #fafafa;
+            overflow-y: auto;
+        }
+        
+        #protokollInhalt [data-baustein-block] {
+            color: #333;
+        }
+
+        #protokollInhalt textarea[data-manuell] {
+            display: block;
+            width: 100%;
+            min-height: 7em;
+            font-family: inherit;
+            font-size: inherit;
+            color: #333;
+            background: transparent;
+            border: none;
+            border-left: 2px solid #e0e0e0;
+            padding: 2px 0 4px 8px;
+            margin: 0;
+            resize: none;
+            outline: none;
+            overflow: hidden;
+            box-sizing: border-box;
+            line-height: 1.5;
+        }
+        #protokollInhalt textarea[data-manuell]:focus {
+            border-left-color: #2196f3;
+            background: rgba(33, 150, 243, 0.02);
+        }
+        #protokollInhalt textarea[data-manuell]::placeholder {
+            color: #bbb;
+            font-style: italic;
+        }
+        
+        #protokollInhalt:empty::before {
+            content: 'Hier erscheinen die ausgewählten Textbausteine...';
+            color: #95a5a6;
+            font-style: italic;
+        }
+        
+        #protokollInhalt:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        /* Geräte-Bewertungs-Bereich */
+        .geraete-bewertung {
+            padding: 10px 12px;
+            border-top: 2px solid #ecf0f1;
+            background: #fafafa;
+        }
+
+        .geraete-bewertung-titel {
+            font-size: 12px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .geraete-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .geraet-card {
+            background: white;
+            border: 1px solid #ecf0f1;
+            border-radius: 6px;
+            padding: 8px 10px;
+        }
+
+        .geraet-card-titel {
+            font-size: 11px;
+            font-weight: 600;
+            color: #7f8c8d;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .geraet-card select, .geraet-card input {
+            width: 100%;
+            padding: 4px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-bottom: 4px;
+            background: white;
+        }
+
+        .geraet-card input[type="number"] {
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .geraet-endpunkte {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #bdc3c7;
+            margin-top: 4px;
+        }
+
+        .geraet-endpunkte.bewertet { color: #27ae60; }
+        .geraet-endpunkte.good { color: #16a085; }
+        .geraet-endpunkte.satisfactory { color: #f39c12; }
+        .geraet-endpunkte.sufficient { color: #e67e22; }
+        .geraet-endpunkte.poor { color: #e74c3c; }
+        .geraet-endpunkte.failing { color: #c0392b; }
+
+        .geraet-endpunkte-label {
+            font-size: 9px;
+            color: #95a5a6;
+            text-align: center;
+        }
+
+        /* Notenberechnung */
+        .noten-bereich-kompakt {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 10px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #ecf0f1;
+        }
+
+        .noten-label-klein {
+            font-size: 11px;
+            font-weight: 600;
+            color: #7f8c8d;
+        }
+        
+        .noten-werte {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .noten-box {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+        
+        .noten-zahl {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .noten-einheit {
+            font-size: 10px;
+            color: #7f8c8d;
+        }
+        
+        .noten-zahl.excellent { color: #27ae60; }
+        .noten-zahl.good { color: #16a085; }
+        .noten-zahl.satisfactory { color: #f39c12; }
+        .noten-zahl.sufficient { color: #e67e22; }
+        .noten-zahl.poor { color: #e74c3c; }
+        .noten-zahl.failing { color: #c0392b; }
+        .noten-zahl.none { color: #bdc3c7; }
+        
+        .warnung {
+            margin-top: 8px;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            display: none;
+        }
+        
+        .warnung.aktiv { display: block; }
+        
+        /* Actions */
+        .actions {
+            display: flex;
+            gap: 10px;
+            padding: 12px;
+            border-top: 2px solid #ecf0f1;
+            background: #fafafa;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-ki {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            flex: 1;
+            background: white;
+            margin: 20px;
+            margin-left: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .sidebar-header {
+            padding: 15px;
+            border-bottom: 2px solid #ecf0f1;
+            background: #34495e;
+            color: white;
+        }
+        
+        .sidebar-header h2 {
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .pruefling-controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .pruefling-select {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid #fff;
+            border-radius: 4px;
+            font-size: 12px;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .btn-add-pruefling {
+            padding: 6px 12px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .btn-add-pruefling:hover {
+            background: #229954;
+        }
+        
+        .kategorie-select {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid #fff;
+            border-radius: 4px;
+            font-size: 12px;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .textbausteine-liste {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+        
+        .bewertungsstufe {
+            margin-bottom: 15px;
+        }
+        
+        .bewertungsstufe-titel {
+            font-size: 12px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            padding: 6px 8px;
+            background: #ecf0f1;
+            border-radius: 4px;
+        }
+        
+        .textbaustein {
+            margin-bottom: 6px;
+            padding: 8px 10px;
+            background: white;
+            border: 2px solid #ecf0f1;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        
+        .textbaustein:hover {
+            border-color: #3498db;
+            background: #f8f9fa;
+        }
+        
+        .textbaustein.ausgewaehlt {
+            background: #d4edda;
+            border-color: #28a745;
+            font-weight: 500;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active { display: flex; }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .modal-content h3 {
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        
+        .modal-content input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .modal-buttons button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .sidebar-hint {
+            font-size: 11px;
+            color: #bdc3c7;
+            font-style: italic;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #7f8c8d;
+        }
+        
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🤸 Turnen-Protokoll</h1>
+        <div class="header-actions">
+            <button class="btn-header" style="background: #3498db;" onclick="zurueckZurAuswahl()">← Prüfungsauswahl</button>
+            <button class="btn-header btn-end-session" onclick="sessionBeenden()">🏁 Prüfung beenden</button>
+            <button class="btn-header logout-btn" onclick="logout()">Abmelden</button>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <!-- Protokoll-Bereich -->
+        <div class="protokoll-bereich">
+            <!-- Metadaten -->
+            <div class="metadaten">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px;">
+                    <input type="date" id="datum" disabled>
+                    <input type="text" id="pruefer" placeholder="Prüfer/-in" disabled>
+                    <input type="text" id="protokollant" placeholder="Protokollant/-in" disabled>
+                    <input type="text" id="fachpruefungsleitung" placeholder="Fachprüfungsleitung" disabled>
+                </div>
+            </div>
+            
+            <!-- Protokolltext -->
+            <div class="protokoll-text">
+                <h2>Protokoll</h2>
+                <div id="protokollInhalt" contenteditable="true"></div>
+            </div>
+
+            <!-- Geräte-Bewertung -->
+            <div class="geraete-bewertung">
+                <div class="geraete-bewertung-titel">Gerätebewertung (Dreikampf – je 33⅓%):</div>
+                <div class="geraete-grid">
+                    <!-- Gerät 1 -->
+                    <div class="geraet-card">
+                        <div class="geraet-card-titel">Gerät 1</div>
+                        <select id="geraet1" onchange="geraetGeaendert(1)">
+                            <option value="">Gerät wählen...</option>
+                            <option>Parallelbarren</option>
+                            <option>Stufenbarren</option>
+                            <option>Hochreck</option>
+                            <option>Schwebebalken</option>
+                            <option>Großes Trampolin</option>
+                            <option>Mini-Trampolin</option>
+                            <option>Sprung</option>
+                            <option>Boden</option>
+                            <option>Ringe (stillhängend)</option>
+                            <option>Ringe (schwingend)</option>
+                            <option>Akrobatik</option>
+                        </select>
+                        <select id="schwierigkeit1" onchange="berechneEndpunkte(1)" title="Schwierigkeitsstufe">
+                            <option value="">Stufe...</option>
+                            <option value="I">Stufe I</option>
+                            <option value="II">Stufe II</option>
+                            <option value="III">Stufe III</option>
+                            <option value="IV">Stufe IV</option>
+                            <option value="V">Stufe V</option>
+                        </select>
+                        <select id="ausfuehrung1" onchange="berechneEndpunkte(1)"><option value="">Ausführung...</option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option></select>
+                        <div class="geraet-endpunkte none" id="endpunkte1">–</div>
+                        <div class="geraet-endpunkte-label">Endpunkte</div>
+                    </div>
+                    <!-- Gerät 2 -->
+                    <div class="geraet-card">
+                        <div class="geraet-card-titel">Gerät 2</div>
+                        <select id="geraet2" onchange="geraetGeaendert(2)">
+                            <option value="">Gerät wählen...</option>
+                            <option>Parallelbarren</option>
+                            <option>Stufenbarren</option>
+                            <option>Hochreck</option>
+                            <option>Schwebebalken</option>
+                            <option>Großes Trampolin</option>
+                            <option>Mini-Trampolin</option>
+                            <option>Sprung</option>
+                            <option>Boden</option>
+                            <option>Ringe (stillhängend)</option>
+                            <option>Ringe (schwingend)</option>
+                            <option>Akrobatik</option>
+                        </select>
+                        <select id="schwierigkeit2" onchange="berechneEndpunkte(2)" title="Schwierigkeitsstufe">
+                            <option value="">Stufe...</option>
+                            <option value="I">Stufe I</option>
+                            <option value="II">Stufe II</option>
+                            <option value="III">Stufe III</option>
+                            <option value="IV">Stufe IV</option>
+                            <option value="V">Stufe V</option>
+                        </select>
+                        <select id="ausfuehrung2" onchange="berechneEndpunkte(2)"><option value="">Ausführung...</option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option></select>
+                        <div class="geraet-endpunkte none" id="endpunkte2">–</div>
+                        <div class="geraet-endpunkte-label">Endpunkte</div>
+                    </div>
+                    <!-- Gerät 3 -->
+                    <div class="geraet-card">
+                        <div class="geraet-card-titel">Gerät 3</div>
+                        <select id="geraet3" onchange="geraetGeaendert(3)">
+                            <option value="">Gerät wählen...</option>
+                            <option>Parallelbarren</option>
+                            <option>Stufenbarren</option>
+                            <option>Hochreck</option>
+                            <option>Schwebebalken</option>
+                            <option>Großes Trampolin</option>
+                            <option>Mini-Trampolin</option>
+                            <option>Sprung</option>
+                            <option>Boden</option>
+                            <option>Ringe (stillhängend)</option>
+                            <option>Ringe (schwingend)</option>
+                            <option>Akrobatik</option>
+                        </select>
+                        <select id="schwierigkeit3" onchange="berechneEndpunkte(3)" title="Schwierigkeitsstufe">
+                            <option value="">Stufe...</option>
+                            <option value="I">Stufe I</option>
+                            <option value="II">Stufe II</option>
+                            <option value="III">Stufe III</option>
+                            <option value="IV">Stufe IV</option>
+                            <option value="V">Stufe V</option>
+                        </select>
+                        <select id="ausfuehrung3" onchange="berechneEndpunkte(3)"><option value="">Ausführung...</option><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option></select>
+                        <div class="geraet-endpunkte none" id="endpunkte3">–</div>
+                        <div class="geraet-endpunkte-label">Endpunkte</div>
+                    </div>
+                </div>
+
+                <!-- Endnote -->
+                <div class="noten-bereich-kompakt">
+                    <span class="noten-label-klein">Endnote (Ø gerundet):</span>
+                    <div class="noten-werte">
+                        <div class="noten-box">
+                            <span class="noten-zahl none" id="endnotePunkte">–</span>
+                            <span class="noten-einheit">Pkt</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="warnung" id="warnung">
+                    ⚠️ Bitte bewerten Sie alle 3 Geräte für eine vollständige Notenberechnung
+                </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="actions">
+                <button class="btn btn-ki" id="kiButton" onclick="generiereFliesstextMitKI()" disabled>
+                    ✨ KI-Fließtext generieren
+                </button>
+                <button class="btn btn-primary" onclick="exportPDF()">
+                    📄 Als PDF exportieren
+                </button>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>Prüfling & Textbausteine</h2>
+                <div class="pruefling-controls">
+                    <select class="pruefling-select" id="sidebarPrueflingSelect" onchange="prueflingWechselnAusSidebar()">
+                        <option value="">Lade Prüflinge...</option>
+                    </select>
+                    <button class="btn-add-pruefling" onclick="neuerPrueflingModal()">+ Neu</button>
+                </div>
+                <select class="kategorie-select" id="kategorieSelect" onchange="ladeTextbausteine()">
+                    <option value="">Gerät wählen für Bausteine...</option>
+                    <option value="Gerät 1">Gerät 1</option>
+                    <option value="Gerät 2">Gerät 2</option>
+                    <option value="Gerät 3">Gerät 3</option>
+                </select>
+            </div>
+            <div class="textbausteine-liste" id="textbausteineContainer">
+                <p class="sidebar-hint">Gerät in der Sidebar-Auswahl wählen, um Textbausteine zur Ausführungsqualität anzuzeigen.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal -->
+    <div class="modal" id="neuPrueflingModal">
+        <div class="modal-content">
+            <h3>➕ Neuer Prüfling</h3>
+            <input type="text" id="neuPrueflingName" placeholder="Name des Prüflings">
+            <div class="modal-buttons">
+                <button style="background: #27ae60; color: white;" onclick="prueflingHinzufuegen()">Hinzufügen</button>
+                <button style="background: #95a5a6; color: white;" onclick="modalSchliessen()">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        // ========== GLOBALE VARIABLEN ==========
+        let sessionData = null;
+        let prueflings = [];
+        let currentPrueflingId = null;
+        let currentPruefling = null;
+
+        const kategorien = ['Gerät 1', 'Gerät 2', 'Gerät 3'];
+
+        let ausgewaehlteBausteine = { 'Gerät 1': [], 'Gerät 2': [], 'Gerät 3': [] };
+        // Gerätedaten: name, schwierigkeit, ausfuehrung, endpunkte
+        let geraeteDaten = {
+            1: { name: '', schwierigkeit: '', ausfuehrung: null, endpunkte: null },
+            2: { name: '', schwierigkeit: '', ausfuehrung: null, endpunkte: null },
+            3: { name: '', schwierigkeit: '', ausfuehrung: null, endpunkte: null }
+        };
+
+        // ========== LOOKUP-TABELLE (Schwierigkeitsstufe × Ausführungspunkte) ==========
+        // Zeilen = Schwierigkeitsstufen I-V, Spalten = Ausführungspunkte 0-15
+        const lookupTabelle = {
+            'I':  [0,2,4,5,6,7,8,9,10,11,12,13,14,14,15,15],
+            'II': [0,1,2,3,4,5,6,7, 8, 9,10,11,12,12,13,13],
+            'III':[0,0,1,2,3,4,5,6, 7, 8, 9, 9,10,10,11,11],
+            'IV': [0,0,0,0,1,2,3,4, 5, 5, 6, 6, 7, 7, 8, 8],
+            'V':  [0,0,0,0,0,0,1,2, 2, 3, 3, 4, 4, 5, 5, 5]
+        };
+
+        // ========== TEXTBAUSTEINE – Ausführungsqualität (allgemein für alle Geräte) ==========
+        const textbausteine = {
+            "Sehr gut (15–13 Punkte)": [
+                "Die Übung wird in besonderem Maße sicher und fließend ausgeführt",
+                "Alle Einzelelemente werden technisch einwandfrei beherrscht",
+                "Der Bewegungsfluss ist durchgehend rhythmisch und harmonisch",
+                "Die Körperhaltung bleibt auch in schwierigen Passagen stabil und korrekt",
+                "Übergänge zwischen den Elementen gelingen nahtlos und ohne Unterbrechung",
+                "Kleinere Haltungsmängel beeinträchtigen den Gesamteindruck nicht",
+                "Die Ausführung zeugt von hoher körperlicher Kontrolle und Bewegungssicherheit",
+                "Der Rhythmus wird konsequent und präzise eingehalten",
+                "Die Übung wirkt insgesamt souverän und ästhetisch überzeugend",
+                "Die Beherrschung der technischen Anforderungen ist deutlich erkennbar"
+            ],
+            "Gut (12–10 Punkte)": [
+                "Die Übung wird flüssig und mit erkennbarem Rhythmus ausgeführt",
+                "Die meisten Elemente werden sicher beherrscht",
+                "Kleinere Mängel in Haltung oder Technik treten vereinzelt auf, beeinträchtigen aber den Gesamteindruck nicht wesentlich",
+                "Der Bewegungsfluss ist weitgehend erhalten",
+                "Die Körperhaltung ist überwiegend korrekt",
+                "Die Übergänge gelingen in der Regel ohne größere Unterbrechungen",
+                "Die technische Ausführung entspricht den Anforderungen gut",
+                "Rhythmische Betonung ist erkennbar und trägt zum Gesamteindruck bei",
+                "Die Übung hinterlässt einen insgesamt positiven Eindruck",
+                "Die turnerischen Grundanforderungen werden zuverlässig erfüllt"
+            ],
+            "Befriedigend (9–7 Punkte)": [
+                "Die Übung entspricht im Allgemeinen den Kriterien, weist jedoch wiederholt Unsicherheiten auf",
+                "Bewegungsfluss und -rhythmus werden durch einzelne Fehler leicht beeinträchtigt",
+                "Der gesamte Bewegungsablauf kann noch als zusammenhängend angesehen werden",
+                "Die Körperhaltung zeigt Mängel, die den Gesamteindruck beeinflussen",
+                "Einzelne Elemente werden mit erkennbaren Schwierigkeiten ausgeführt",
+                "Die technische Kontrolle ist stellenweise eingeschränkt",
+                "Übergänge gelingen nicht durchgehend flüssig",
+                "Der Rhythmus wird nicht konsequent gehalten",
+                "Die Beherrschung der Elemente schwankt im Verlauf der Übung",
+                "Die Ausführung ist solide, aber ohne ausgeprägte Stärken"
+            ],
+            "Ausreichend (6–4 Punkte)": [
+                "Die Übung lässt deutliche Mängel in der Beherrschung der Einzelelemente erkennen",
+                "Der Bewegungsfluss wird durch Fehler spürbar unterbrochen",
+                "Haltungsmängel treten mehrfach und deutlich auf",
+                "Der Bewegungsablauf kann gerade noch als zusammenhängend angesehen werden",
+                "Die technische Ausführung entspricht den Anforderungen nur teilweise",
+                "Unsicherheiten in der Körperkontrolle sind erkennbar",
+                "Einzelne Elemente werden nur unvollständig ausgeführt",
+                "Rhythmische Gestaltung ist kaum vorhanden",
+                "Die Übung zeigt den Lernstand, bleibt aber deutlich hinter den Anforderungen zurück",
+                "Kompensationsversuche gelingen nur bedingt"
+            ],
+            "Mangelhaft (3–1 Punkte)": [
+                "Die Übung entspricht den Kriterien im Allgemeinen nicht mehr",
+                "Der Bewegungsfluss wird mehrfach unterbrochen",
+                "Ein erkennbarer Bewegungsrhythmus ist nicht mehr feststellbar",
+                "Der Bewegungsablauf ist insgesamt gestört",
+                "Deutliche Mängel in der Beherrschung der Einzelelemente treten durchgehend auf",
+                "Die Körperhaltung ist überwiegend fehlerhaft",
+                "Grundlegende technische Anforderungen werden nicht erfüllt",
+                "Die Ausführung wirkt unsicher und unkontrolliert",
+                "Mehrere Elemente scheitern oder müssen abgebrochen werden",
+                "Der Zusammenhang der Übung ist kaum noch erkennbar"
+            ],
+            "Ungenügend (0 Punkte)": [
+                "Die Übung entspricht den Kriterien nicht",
+                "Die Elemente werden überwiegend schlecht oder gar nicht ausgeführt",
+                "Ein Gesamtzusammenhang ist nicht zu erkennen",
+                "Grundlegende Bewegungsanforderungen können nicht erfüllt werden",
+                "Die turnerischen Mindestanforderungen werden nicht ansatzweise erreicht"
+            ]
+        };
+
+        // ========== INITIALISIERUNG ==========
+        async function init() {
+            if (!sessionStorage.getItem('authenticated')) {
+                window.location.href = 'index.html';
+                return;
+            }
+            const sessionId = sessionStorage.getItem('sessionId');
+            if (!sessionId) {
+                alert('Keine Session gefunden. Bitte starten Sie eine neue Prüfung.');
+                window.location.href = 'exam-selection.html';
+                return;
+            }
+            await ladeSessionDaten(sessionId);
+        }
+
+        async function ladeSessionDaten(sessionId) {
+            try {
+                const response = await fetch(`/api/sessions-get?sessionId=${sessionId}`);
+                const data = await response.json();
+                if (!data.success) throw new Error(data.error || 'Fehler beim Laden der Session');
+
+                sessionData = data.session;
+                prueflings = data.prueflings;
+
+                document.getElementById('datum').value = sessionData.datum;
+                document.getElementById('pruefer').value = sessionData.pruefer;
+                document.getElementById('protokollant').value = sessionData.protokollant;
+                document.getElementById('fachpruefungsleitung').value = sessionData.fachpruefungsleitung;
+
+                aktualisierePrueflingDropdowns();
+
+                if (prueflings.length > 0) {
+                    currentPrueflingId = prueflings[0].id;
+                    await ladePrueflingDaten(currentPrueflingId);
+                }
+
+                // Auto-Save Listener
+                const protokoll = document.getElementById('protokollInhalt');
+                if (protokoll) {
+                    protokoll.addEventListener('input', (e) => {
+                        if (!e.target.dataset || !e.target.dataset.manuell) return;
+                        clearTimeout(window._manuellSaveTimer);
+                        window._manuellSaveTimer = setTimeout(() => {
+                            if (!currentPrueflingId) return;
+                            speicherePrueflingDaten();
+                        }, 1000);
+                    });
+                }
+
+            } catch (error) {
+                console.error('Fehler beim Laden:', error);
+                alert('Fehler beim Laden der Session-Daten: ' + error.message);
+            }
+        }
+
+        function aktualisierePrueflingDropdowns() {
+            const select = document.getElementById('sidebarPrueflingSelect');
+            select.innerHTML = '';
+            prueflings.forEach(p => {
+                const option = document.createElement('option');
+                option.value = p.id;
+                option.textContent = p.name + (p.completed ? ' ✓' : '');
+                select.appendChild(option);
+            });
+            select.disabled = false;
+            if (currentPrueflingId) select.value = currentPrueflingId;
+        }
+
+        async function ladePrueflingDaten(prueflingId) {
+            try {
+                const response = await fetch(`/api/sessions-get?sessionId=${sessionData.id}`);
+                const data = await response.json();
+                if (data.success) prueflings = data.prueflings;
+            } catch (error) {
+                console.error('Fehler beim Aktualisieren:', error);
+            }
+
+            currentPrueflingId = prueflingId;
+            currentPruefling = prueflings.find(p => p.id === prueflingId);
+            if (!currentPruefling) return;
+
+            document.getElementById('sidebarPrueflingSelect').value = prueflingId;
+
+            const selections = currentPruefling.selections || {};
+
+            // Bausteine laden
+            kategorien.forEach(kat => {
+                if (selections[kat] && Array.isArray(selections[kat])) {
+                    ausgewaehlteBausteine[kat] = [...selections[kat]];
+                } else {
+                    ausgewaehlteBausteine[kat] = [];
+                }
+            });
+
+            // Gerätedaten laden
+            for (let i = 1; i <= 3; i++) {
+                geraeteDaten[i] = {
+                    name: selections[`geraet_${i}`] || '',
+                    schwierigkeit: selections[`schwierigkeit_${i}`] || '',
+                    ausfuehrung: selections[`ausfuehrung_${i}`] !== undefined ? selections[`ausfuehrung_${i}`] : null,
+                    endpunkte: selections[`endpunkte_${i}`] !== undefined ? selections[`endpunkte_${i}`] : null
+                };
+                document.getElementById(`geraet${i}`).value = geraeteDaten[i].name;
+                document.getElementById(`schwierigkeit${i}`).value = geraeteDaten[i].schwierigkeit;
+                document.getElementById(`ausfuehrung${i}`).value = geraeteDaten[i].ausfuehrung !== null ? geraeteDaten[i].ausfuehrung : '';
+                aktualisiereEndpunkteAnzeige(i);
+            }
+
+            document.getElementById('protokollInhalt').innerHTML = '';
+            window._geladeneManuellTexte = selections['_manuell'] || {};
+
+            if (currentPruefling.ai_text) {
+                const feld = document.getElementById('protokollInhalt');
+                feld.innerHTML = '';
+                const textNode = document.createElement('span');
+                textNode.style.whiteSpace = 'pre-wrap';
+                textNode.textContent = currentPruefling.ai_text;
+                feld.appendChild(textNode);
+            } else {
+                aktualisiereProtokolltext();
+            }
+
+            berechneEndnote();
+            ladeTextbausteine();
+        }
+
+        async function prueflingWechselnAusSidebar() {
+            const newId = document.getElementById('sidebarPrueflingSelect').value;
+            if (newId && newId !== currentPrueflingId) {
+                clearTimeout(window._manuellSaveTimer);
+                if (currentPruefling) {
+                    await speicherePrueflingDaten();
+                }
+                ladePrueflingDaten(newId);
+            }
+        }
+
+        // ========== GERÄTEBEWERTUNG ==========
+        function geraetGeaendert(nr) {
+            geraeteDaten[nr].name = document.getElementById(`geraet${nr}`).value;
+            aktualisiereProtokolltext();
+            speicherePrueflingDaten();
+        }
+
+        function berechneEndpunkte(nr) {
+            const schwierigkeit = document.getElementById(`schwierigkeit${nr}`).value;
+            const ausfuehrungRaw = document.getElementById(`ausfuehrung${nr}`).value;
+            const ausfuehrung = ausfuehrungRaw !== '' ? parseInt(ausfuehrungRaw) : null;
+
+            geraeteDaten[nr].schwierigkeit = schwierigkeit;
+            geraeteDaten[nr].ausfuehrung = ausfuehrung;
+
+            if (schwierigkeit && ausfuehrung !== null && ausfuehrung >= 0 && ausfuehrung <= 15) {
+                geraeteDaten[nr].endpunkte = lookupTabelle[schwierigkeit][ausfuehrung];
+            } else {
+                geraeteDaten[nr].endpunkte = null;
+            }
+
+            aktualisiereEndpunkteAnzeige(nr);
+            berechneEndnote();
+            speicherePrueflingDaten();
+        }
+
+        function aktualisiereEndpunkteAnzeige(nr) {
+            const el = document.getElementById(`endpunkte${nr}`);
+            const ep = geraeteDaten[nr].endpunkte;
+            if (ep === null || ep === undefined) {
+                el.textContent = '–';
+                el.className = 'geraet-endpunkte none';
+                return;
+            }
+            el.textContent = ep;
+            const colorClass =
+                ep >= 13 ? 'bewertet' :
+                ep >= 10 ? 'good' :
+                ep >= 7  ? 'satisfactory' :
+                ep >= 4  ? 'sufficient' :
+                ep >= 1  ? 'poor' : 'failing';
+            el.className = 'geraet-endpunkte ' + colorClass;
+        }
+
+        function berechneEndnote() {
+            const punkte = [1,2,3].map(i => geraeteDaten[i].endpunkte);
+            const warnung = document.getElementById('warnung');
+            const endnoteEl = document.getElementById('endnotePunkte');
+
+            if (punkte.every(p => p !== null && p !== undefined)) {
+                warnung.classList.remove('aktiv');
+                const durchschnitt = (punkte[0] + punkte[1] + punkte[2]) / 3;
+                const gerundet = Math.round(durchschnitt);
+                endnoteEl.textContent = gerundet;
+                const colorClass =
+                    gerundet >= 13 ? 'excellent' :
+                    gerundet >= 10 ? 'good' :
+                    gerundet >= 7  ? 'satisfactory' :
+                    gerundet >= 4  ? 'sufficient' :
+                    gerundet >= 1  ? 'poor' : 'failing';
+                endnoteEl.className = 'noten-zahl ' + colorClass;
+            } else {
+                warnung.classList.add('aktiv');
+                endnoteEl.textContent = '–';
+                endnoteEl.className = 'noten-zahl none';
+            }
+        }
+
+        // ========== TEXTBAUSTEINE ==========
+        function ladeTextbausteine() {
+            const kategorie = document.getElementById('kategorieSelect').value;
+            const container = document.getElementById('textbausteineContainer');
+
+            if (!kategorie) {
+                container.innerHTML = '<p class="sidebar-hint">Gerät wählen, um Textbausteine anzuzeigen.</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+            const stufen = Object.keys(textbausteine);
+
+            stufen.forEach(stufe => {
+                const stufenDiv = document.createElement('div');
+                stufenDiv.className = 'bewertungsstufe';
+
+                const titel = document.createElement('div');
+                titel.className = 'bewertungsstufe-titel';
+                titel.textContent = stufe;
+                stufenDiv.appendChild(titel);
+
+                textbausteine[stufe].forEach(baustein => {
+                    const div = document.createElement('div');
+                    div.className = 'textbaustein';
+                    div.textContent = baustein;
+                    if (ausgewaehlteBausteine[kategorie].includes(baustein)) {
+                        div.classList.add('ausgewaehlt');
+                    }
+                    div.onclick = () => toggleTextbaustein(kategorie, baustein);
+                    stufenDiv.appendChild(div);
+                });
+
+                container.appendChild(stufenDiv);
+            });
+        }
+
+        function toggleTextbaustein(kategorie, baustein) {
+            if (currentPruefling && currentPruefling.ai_text) {
+                const bestaetigt = confirm(
+                    'Der KI-generierte Text wird verworfen und die Textbausteinliste neu aufgebaut.\n' +
+                    'Manuelle Ergänzungen gehen dabei verloren.\n\nFortfahren?'
+                );
+                if (!bestaetigt) return;
+                currentPruefling.ai_text = null;
+                fetch('/api/prueflings-update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prueflingId: currentPrueflingId, aiText: null })
+                });
+            }
+
+            const index = ausgewaehlteBausteine[kategorie].indexOf(baustein);
+            if (index > -1) {
+                ausgewaehlteBausteine[kategorie].splice(index, 1);
+            } else {
+                ausgewaehlteBausteine[kategorie].push(baustein);
+            }
+
+            ladeTextbausteine();
+            aktualisiereProtokolltext();
+            speicherePrueflingDaten();
+        }
+
+        // ========== PROTOKOLLTEXT ==========
+        function getManuellText(el) {
+            if (el.tagName === 'TEXTAREA') return el.value.trim();
+            return el.innerHTML
+                .replace(/<br\s*\/?>/gi, '\n')
+                .replace(/<div>/gi, '\n')
+                .replace(/<\/div>/gi, '')
+                .replace(/&nbsp;/g, ' ')
+                .replace(/&amp;/g, '&')
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .trim();
+        }
+
+        function getProtokollText() {
+            const feld = document.getElementById('protokollInhalt');
+            let text = '';
+            feld.childNodes.forEach(node => {
+                if (node.tagName === 'TEXTAREA') {
+                    const val = node.value.trim();
+                    if (val) text += val + '\n';
+                } else if (node.nodeType === Node.TEXT_NODE) {
+                    text += node.textContent;
+                } else {
+                    text += node.innerText || node.textContent || '';
+                }
+            });
+            return text.trim();
+        }
+
+        function autoResizeTextarea(ta) {
+            ta.style.height = 'auto';
+            ta.style.height = ta.scrollHeight + 'px';
+        }
+
+        function aktualisiereProtokolltext() {
+            const feld = document.getElementById('protokollInhalt');
+
+            // Manuelle Ergänzungen sichern
+            const manuelleTexte = {};
+            feld.querySelectorAll('[data-baustein-block]').forEach(block => {
+                const kat = block.dataset.bausteinBlock;
+                const naechster = block.nextSibling;
+                if (naechster && naechster.dataset && naechster.dataset.manuell) {
+                    const txt = getManuellText(naechster);
+                    if (txt) manuelleTexte[kat] = txt;
+                }
+            });
+
+            const quellTexte = Object.keys(manuelleTexte).length > 0
+                ? manuelleTexte
+                : (window._geladeneManuellTexte || {});
+
+            feld.innerHTML = '';
+            let hatInhalt = false;
+
+            kategorien.forEach(kategorie => {
+                const nr = parseInt(kategorie.replace('Gerät ', ''));
+                const geraetName = geraeteDaten[nr] ? geraeteDaten[nr].name : '';
+                const bausteine = ausgewaehlteBausteine[kategorie];
+
+                if (bausteine.length > 0 || geraetName) {
+                    if (bausteine.length > 0) hatInhalt = true;
+
+                    const block = document.createElement('span');
+                    block.dataset.bausteinBlock = kategorie;
+                    block.contentEditable = 'false';
+                    block.style.display = 'block';
+                    block.style.whiteSpace = 'pre-wrap';
+
+                    const label = geraetName
+                        ? `${kategorie}: ${geraetName}`
+                        : kategorie;
+
+                    block.textContent = label + ':\n' +
+                        (bausteine.length > 0
+                            ? bausteine.map(b => '• ' + b).join('\n') + '\n'
+                            : '');
+                    feld.appendChild(block);
+
+                    const manuell = document.createElement('textarea');
+                    manuell.dataset.manuell = kategorie;
+                    manuell.placeholder = 'Manuelle Ergänzung...';
+                    manuell.value = quellTexte[kategorie] || '';
+                    manuell.rows = 4;
+                    feld.appendChild(manuell);
+                    autoResizeTextarea(manuell);
+                    manuell.addEventListener('input', () => autoResizeTextarea(manuell));
+                }
+            });
+
+            window._geladeneManuellTexte = {};
+            document.getElementById('kiButton').disabled = !hatInhalt;
+        }
+
+        // ========== SPEICHERN ==========
+        async function speicherePrueflingDaten() {
+            if (!currentPrueflingId) return;
+
+            const selections = {};
+
+            // Bausteine
+            kategorien.forEach(kat => {
+                selections[kat] = ausgewaehlteBausteine[kat];
+            });
+
+            // Gerätedaten
+            for (let i = 1; i <= 3; i++) {
+                selections[`geraet_${i}`] = geraeteDaten[i].name;
+                selections[`schwierigkeit_${i}`] = geraeteDaten[i].schwierigkeit;
+                selections[`ausfuehrung_${i}`] = geraeteDaten[i].ausfuehrung;
+                selections[`endpunkte_${i}`] = geraeteDaten[i].endpunkte;
+            }
+
+            // Manuelle Texte
+            const manuelleTexte = {};
+            document.querySelectorAll('[data-manuell]').forEach(el => {
+                const txt = getManuellText(el);
+                if (txt) manuelleTexte[el.dataset.manuell] = txt;
+            });
+            if (Object.keys(manuelleTexte).length > 0) {
+                selections['_manuell'] = manuelleTexte;
+            }
+
+            try {
+                await fetch('/api/prueflings-update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prueflingId: currentPrueflingId, selections })
+                });
+            } catch (error) {
+                console.error('Auto-Save Fehler:', error);
+            }
+        }
+
+        // ========== KI-GENERIERUNG ==========
+        async function generiereFliesstextMitKI() {
+            const protokollText = getProtokollText();
+            if (!protokollText || protokollText === 'Hier erscheinen die ausgewählten Textbausteine...') {
+                alert('Bitte wählen Sie zuerst Textbausteine aus!');
+                return;
+            }
+
+            const kiButton = document.getElementById('kiButton');
+            const originalText = kiButton.innerHTML;
+            kiButton.disabled = true;
+            kiButton.innerHTML = '⏳ Generiere Fließtext...';
+
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + sessionStorage.getItem('authenticated')
+                    },
+                    body: JSON.stringify({ protokollText, examType: 'turnen' })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    const feld = document.getElementById('protokollInhalt');
+                    const manuelleTexte = {};
+                    feld.querySelectorAll('[data-manuell]').forEach(el => {
+                        const txt = getManuellText(el);
+                        if (txt) manuelleTexte[el.dataset.manuell] = txt;
+                    });
+
+                    feld.innerHTML = '';
+                    const textNode = document.createElement('span');
+                    textNode.style.whiteSpace = 'pre-wrap';
+                    textNode.textContent = data.text;
+                    feld.appendChild(textNode);
+
+                    const selectionsAktuell = {};
+                    kategorien.forEach(kat => { selectionsAktuell[kat] = ausgewaehlteBausteine[kat]; });
+                    for (let i = 1; i <= 3; i++) {
+                        selectionsAktuell[`geraet_${i}`] = geraeteDaten[i].name;
+                        selectionsAktuell[`schwierigkeit_${i}`] = geraeteDaten[i].schwierigkeit;
+                        selectionsAktuell[`ausfuehrung_${i}`] = geraeteDaten[i].ausfuehrung;
+                        selectionsAktuell[`endpunkte_${i}`] = geraeteDaten[i].endpunkte;
+                    }
+                    if (Object.keys(manuelleTexte).length > 0) {
+                        selectionsAktuell['_manuell'] = manuelleTexte;
+                    }
+
+                    await fetch('/api/prueflings-update', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            prueflingId: currentPrueflingId,
+                            selections: selectionsAktuell,
+                            aiText: data.text
+                        })
+                    });
+
+                    currentPruefling.ai_text = data.text;
+                } else {
+                    alert('Fehler: ' + (data.error || 'Unbekannter Fehler'));
+                }
+            } catch (error) {
+                console.error('Fehler:', error);
+                alert('Fehler bei der Fließtext-Generierung: ' + error.message);
+            } finally {
+                kiButton.disabled = false;
+                kiButton.innerHTML = originalText;
+            }
+        }
+
+        // ========== PDF EXPORT ==========
+        function exportPDF() {
+            const metadaten = {
+                datum: document.getElementById('datum').value,
+                pruefling: currentPruefling ? currentPruefling.name : '',
+                pruefer: document.getElementById('pruefer').value,
+                protokollant: document.getElementById('protokollant').value,
+                fachpruefungsleitung: document.getElementById('fachpruefungsleitung').value
+            };
+
+            const protokollText = getProtokollText();
+            if (!protokollText || protokollText === 'Hier erscheinen die ausgewählten Textbausteine...') {
+                alert('Bitte erstellen Sie zuerst ein Protokoll!');
+                return;
+            }
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                let y = 20;
+                const lineHeight = 7;
+                const margin = 20;
+                const maxWidth = 170;
+
+                doc.setFontSize(18);
+                doc.setFont(undefined, 'bold');
+                doc.text('Prüfungsprotokoll – Turnen (Dreikampf)', margin, y);
+                y += lineHeight * 2;
+
+                doc.setLineWidth(0.5);
+                doc.line(margin, y, margin + maxWidth, y);
+                y += lineHeight * 1.5;
+
+                doc.setFontSize(11);
+                doc.setFont(undefined, 'normal');
+                const leftCol = margin;
+                const rightCol = margin + 90;
+                let yLeft = y, yRight = y;
+
+                if (metadaten.datum) {
+                    doc.text('Datum: ' + new Date(metadaten.datum).toLocaleDateString('de-DE'), leftCol, yLeft);
+                    yLeft += lineHeight;
+                }
+                if (metadaten.pruefling) {
+                    doc.text('Prüfling: ' + metadaten.pruefling, leftCol, yLeft);
+                    yLeft += lineHeight;
+                }
+                if (metadaten.pruefer) {
+                    doc.text('Prüfer/-in: ' + metadaten.pruefer, rightCol, yRight);
+                    yRight += lineHeight;
+                }
+                if (metadaten.protokollant) {
+                    doc.text('Protokollant/-in: ' + metadaten.protokollant, rightCol, yRight);
+                    yRight += lineHeight;
+                }
+                if (metadaten.fachpruefungsleitung) {
+                    doc.text('Fachprüfungsleitung: ' + metadaten.fachpruefungsleitung, rightCol, yRight);
+                    yRight += lineHeight;
+                }
+
+                y = Math.max(yLeft, yRight) + lineHeight;
+                doc.setLineWidth(0.5);
+                doc.line(margin, y, margin + maxWidth, y);
+                y += lineHeight * 1.5;
+
+                // Gerätebewertung-Tabelle
+                doc.setFontSize(11);
+                doc.setFont(undefined, 'bold');
+                doc.text('Gerätebewertung:', margin, y);
+                y += lineHeight;
+
+                doc.setFontSize(10);
+                doc.setFont(undefined, 'normal');
+                for (let i = 1; i <= 3; i++) {
+                    const g = geraeteDaten[i];
+                    if (g.name) {
+                        let zeile = `Gerät ${i}: ${g.name}`;
+                        if (g.schwierigkeit) zeile += `  |  Stufe: ${g.schwierigkeit}`;
+                        if (g.ausfuehrung !== null) zeile += `  |  Ausführung: ${g.ausfuehrung} Pkt`;
+                        if (g.endpunkte !== null) zeile += `  |  Endpunkte: ${g.endpunkte}`;
+                        doc.text(zeile, margin, y);
+                        y += lineHeight;
+                    }
+                }
+
+                // Endnote
+                const ep = [1,2,3].map(i => geraeteDaten[i].endpunkte);
+                if (ep.every(p => p !== null && p !== undefined)) {
+                    const endnote = Math.round((ep[0] + ep[1] + ep[2]) / 3);
+                    doc.setFont(undefined, 'bold');
+                    doc.text(`Endnote (gerundet): ${endnote} Punkte`, margin, y);
+                    doc.setFont(undefined, 'normal');
+                    y += lineHeight;
+                }
+
+                y += lineHeight * 0.5;
+                doc.setLineWidth(0.5);
+                doc.line(margin, y, margin + maxWidth, y);
+                y += lineHeight * 1.5;
+
+                // Protokolltext
+                doc.setFontSize(10);
+                doc.setFont(undefined, 'normal');
+                const lines = doc.splitTextToSize(protokollText, maxWidth);
+                for (let i = 0; i < lines.length; i++) {
+                    if (y > 270) { doc.addPage(); y = 20; }
+                    doc.text(lines[i], margin, y);
+                    y += lineHeight;
+                }
+
+                if (y > 220) { doc.addPage(); y = 20; } else { y += lineHeight * 2; }
+
+                doc.setLineWidth(0.5);
+                doc.line(margin, y, margin + maxWidth, y);
+                y += lineHeight * 2;
+
+                // Bewertung & Unterschrift
+                doc.setFontSize(11);
+                doc.setFont(undefined, 'bold');
+                const colWidth = 80;
+                doc.text('Bewertung:', leftCol, y);
+                let yBewertung = y + lineHeight;
+                doc.setFont(undefined, 'normal');
+                doc.setLineWidth(0.3);
+                doc.rect(leftCol, yBewertung, colWidth, 25);
+                doc.setFont(undefined, 'bold');
+                doc.text('Unterschrift Protokollant/-in:', rightCol, y);
+                doc.setLineWidth(0.3);
+                doc.line(rightCol, y + lineHeight * 1.5 + 20, rightCol + colWidth, y + lineHeight * 1.5 + 20);
+
+                const filename = metadaten.pruefling
+                    ? 'Protokoll_Turnen_' + metadaten.pruefling.replace(/[^a-zA-Z0-9_-]/g, '_') + '.pdf'
+                    : 'Pruefungsprotokoll_Turnen.pdf';
+                doc.save(filename);
+
+            } catch (error) {
+                console.error('PDF-Export-Fehler:', error);
+                alert('Fehler beim PDF-Export: ' + error.message);
+            }
+        }
+
+        // ========== NAVIGATION / SESSION ==========
+        function zurueckZurAuswahl() {
+            if (confirm('Möchten Sie zur Prüfungsauswahl zurückkehren?\n\nAlle Bewertungen sind bereits gespeichert.')) {
+                window.location.href = 'exam-selection.html';
+            }
+        }
+
+        async function sessionBeenden() {
+            if (!confirm('Möchten Sie die Prüfung wirklich beenden?\n\nAlle Daten bleiben gespeichert und können später im Archiv eingesehen werden.')) return;
+            try {
+                const response = await fetch('/api/sessions-complete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sessionId: sessionData.id })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    sessionStorage.removeItem('sessionId');
+                    window.location.href = 'exam-selection.html';
+                } else {
+                    alert('Fehler beim Beenden: ' + data.error);
+                }
+            } catch (error) {
+                alert('Fehler beim Beenden der Prüfung: ' + error.message);
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('authenticated');
+            sessionStorage.removeItem('sessionId');
+            sessionStorage.removeItem('examType');
+            window.location.href = 'index.html';
+        }
+
+        // ========== PRÜFLING MODAL ==========
+        function neuerPrueflingModal() {
+            document.getElementById('neuPrueflingModal').classList.add('active');
+            document.getElementById('neuPrueflingName').focus();
+        }
+
+        function modalSchliessen() {
+            document.getElementById('neuPrueflingModal').classList.remove('active');
+            document.getElementById('neuPrueflingName').value = '';
+        }
+
+        async function prueflingHinzufuegen() {
+            const name = document.getElementById('neuPrueflingName').value.trim();
+            if (!name) { alert('Bitte Namen eingeben'); return; }
+            try {
+                const response = await fetch('/api/prueflings-create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sessionId: sessionData.id, name })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    prueflings.push(data.pruefling);
+                    aktualisierePrueflingDropdowns();
+                    modalSchliessen();
+                    await ladePrueflingDaten(data.pruefling.id);
+                } else {
+                    alert('Fehler: ' + data.error);
+                }
+            } catch (error) {
+                alert('Fehler beim Hinzufügen: ' + error.message);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const input = document.getElementById('neuPrueflingName');
+            if (input) {
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') prueflingHinzufuegen();
+                });
+            }
+        });
+
+        // ========== START ==========
+        init();
+    </script>
+</body>
+</html>

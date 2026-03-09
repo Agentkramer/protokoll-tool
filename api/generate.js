@@ -20,8 +20,8 @@ module.exports = async (req, res) => {
     return res.status(500).json({ error: 'API-Key nicht konfiguriert' });
   }
 
-const { protokollText, examType } = req.body;
-console.log('examType received:', examType);
+  const { protokollText, examType } = req.body;
+  console.log('examType received:', examType);
 
   if (!protokollText) {
     return res.status(400).json({ error: 'Protokolltext erforderlich' });
@@ -59,6 +59,37 @@ Textbausteine:
 ${protokollText}
 
 Schreibe jetzt den Protokolltext. Halte dich strikt an die drei Teile und ihre Überschriften aus dem Input.`;
+
+    } else if (examType === 'turnen') {
+      prompt = `Du bist Protokollant bei einer Turnprüfung (Dreikampf). Deine Aufgabe ist es, die folgenden Textbausteine zur Ausführungsqualität in einen professionellen Fließtext umzuformen.
+
+STRIKTE REGELN:
+1. Der Input ist in genau drei Geräte gegliedert. Jedes Gerät beginnt mit einer Zeile wie "Gerät 1: [Gerätename]", "Gerät 2: [Gerätename]", "Gerät 3: [Gerätename]"
+2. Übernimm diese Geräteüberschriften EXAKT so wie sie im Input stehen - ändere sie nicht, erfinde keine neuen
+3. Schreibe für jedes Gerät einen zusammenhängenden Absatz aus den Textbausteinen dieses Geräts
+4. Verwende NUR die Inhalte aus dem jeweiligen Gerät - vermische die Geräte NICHT
+5. Erfinde KEINE zusätzlichen Bewertungen, Elemente oder Inhalte, die nicht im Input stehen
+6. KEINE Sportspiele-Begriffe (taktisches Verhalten, Spielfähigkeit, Spielhandlungen)
+7. Keine Markdown-Formatierung (keine **, keine ###, keine ---)
+8. Formuliere in der 3. Person Singular, passend für ein offizielles Prüfungsprotokoll
+
+FORMAT DER AUSGABE:
+[Geräteüberschrift exakt aus Input]
+
+[Fließtext für dieses Gerät]
+
+[Geräteüberschrift exakt aus Input]
+
+[Fließtext für dieses Gerät]
+
+[Geräteüberschrift exakt aus Input]
+
+[Fließtext für dieses Gerät]
+
+Textbausteine:
+${protokollText}
+
+Schreibe jetzt den Protokolltext. Halte dich strikt an die drei Geräte und ihre Überschriften aus dem Input.`;
 
     } else {
       // Standard: Tanz

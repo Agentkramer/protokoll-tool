@@ -140,9 +140,13 @@
         .exam-card.sportspiele {
             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
         }
+
+        .exam-card.turnen {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
         
         .exam-card.englisch {
-            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            background: linear-gradient(135deg, #fa8231 0%, #f7b731 100%);
         }
         
         .exam-card.coming-soon {
@@ -238,6 +242,12 @@
                     <div class="exam-title">Sportspiele</div>
                     <div class="exam-subtitle">Sportprüfung</div>
                 </div>
+
+                <div class="exam-card turnen" onclick="selectExam('turnen')">
+                    <div class="exam-icon">🤸</div>
+                    <div class="exam-title">Turnen</div>
+                    <div class="exam-subtitle">Sportprüfung</div>
+                </div>
                 
                 <div class="exam-card englisch coming-soon">
                     <div class="exam-icon">🗣️</div>
@@ -288,12 +298,14 @@
             const examTypeIcons = {
                 'tanz': '💃',
                 'sportspiele': '⚽',
+                'turnen': '🤸',
                 'englisch': '🗣️'
             };
             
             const examTypeNames = {
                 'tanz': 'Tanz',
                 'sportspiele': 'Sportspiele',
+                'turnen': 'Turnen',
                 'englisch': 'Englisch'
             };
             
@@ -323,12 +335,12 @@
             window.location.href = examType + '.html';
         }
         
-       function selectExam(examType) {
-    if (examType === 'tanz' || examType === 'sportspiele') {
-        sessionStorage.setItem('examType', examType);
-        window.location.href = 'session-setup.html';
-    }
-}
+        function selectExam(examType) {
+            if (examType === 'tanz' || examType === 'sportspiele' || examType === 'turnen') {
+                sessionStorage.setItem('examType', examType);
+                window.location.href = 'session-setup.html';
+            }
+        }
         
         function openArchive() {
             window.location.href = 'archive.html';
