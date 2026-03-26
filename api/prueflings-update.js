@@ -6,22 +6,18 @@ async function handler(req, res) {
   }
 
   try {
-    const { prueflingId, selections, aiText } = req.body;
+    const { prueflingId, selections, aiText, name } = req.body;
 
     if (!prueflingId) {
       return res.status(400).json({ error: 'Prüfling ID fehlt' });
     }
 
-    // Update-Objekt bauen (nur nicht-null Werte)
+    // Update-Objekt bauen (nur übergebene Felder)
     const updateData = {};
-    
-    if (selections !== undefined) {
-      updateData.selections = selections;
-    }
-    
-    if (aiText !== undefined) {
-      updateData.ai_text = aiText;
-    }
+
+    if (selections !== undefined) updateData.selections = selections;
+    if (aiText !== undefined)     updateData.ai_text    = aiText;
+    if (name !== undefined)       updateData.name       = name;
 
     const { data, error } = await supabase
       .from('prueflings')
@@ -35,10 +31,7 @@ async function handler(req, res) {
       return res.status(500).json({ error: 'Fehler beim Speichern', details: error.message });
     }
 
-    res.status(200).json({
-      success: true,
-      pruefling: data
-    });
+    res.status(200).json({ success: true, pruefling: data });
 
   } catch (error) {
     console.error('Server error:', error);

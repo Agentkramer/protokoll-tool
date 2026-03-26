@@ -148,6 +148,11 @@
             overflow: hidden;
             box-sizing: border-box;
             line-height: 1.5;
+            -webkit-user-select: text;
+            user-select: text;
+            -webkit-touch-callout: default;
+            touch-action: auto;
+            cursor: text;
         }
         #protokollInhalt textarea[data-manuell]:focus {
             border-left-color: #2196f3;
@@ -539,14 +544,14 @@
     <div class="main-container">
         <!-- Protokoll-Bereich -->
         <div class="protokoll-bereich">
-            <!-- Metadaten (schreibgeschützt, von Session geladen) -->
+            <!-- Metadaten (editierbar) -->
             <div class="metadaten">
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px;">
-    <input type="date" id="datum" disabled>
-    <input type="text" id="pruefer" placeholder="Prüfer/-in" disabled>
-    <input type="text" id="protokollant" placeholder="Protokollant/-in" disabled>
-    <input type="text" id="fachpruefungsleitung" placeholder="Fachprüfungsleitung" disabled>
-</div>            
+    <input type="date" id="datum" title="Datum ändern" onchange="speichereSessionMetadaten()">
+    <input type="text" id="pruefer" placeholder="Prüfer/-in" title="Klicken zum Bearbeiten" onblur="speichereSessionMetadaten()">
+    <input type="text" id="protokollant" placeholder="Protokollant/-in" title="Klicken zum Bearbeiten" onblur="speichereSessionMetadaten()">
+    <input type="text" id="fachpruefungsleitung" placeholder="Fachprüfungsleitung" title="Klicken zum Bearbeiten" onblur="speichereSessionMetadaten()">
+</div>
 </div>
             
             <!-- Protokolltext - maximaler Platz -->
@@ -602,7 +607,8 @@
                     <select class="pruefling-select" id="sidebarPrueflingSelect" onchange="prueflingWechselnAusSidebar()">
                         <option value="">Lade Prüflinge...</option>
                     </select>
-                    <button class="btn-add-pruefling" onclick="neuerPrueflingModal()">+ Neu</button>
+                    <button class="btn-add-pruefling" onclick="neuerPrueflingModal()" title="Neuen Prüfling anlegen">+ Neu</button>
+                    <button class="btn-add-pruefling" onclick="umbenennModalOeffnen()" title="Name des aktuellen Prüflings ändern" style="background:#e67e22;">✏️</button>
                 </div>
                 
                 <select class="kategorie-select" id="kategorieSelect" onchange="ladeTextbausteine()">
@@ -624,6 +630,18 @@
             <div class="modal-buttons">
                 <button style="background: #27ae60; color: white;" onclick="prueflingHinzufuegen()">Hinzufügen</button>
                 <button style="background: #95a5a6; color: white;" onclick="modalSchliessen()">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal für Prüfling umbenennen -->
+    <div class="modal" id="umbenennPrueflingModal">
+        <div class="modal-content">
+            <h3>✏️ Prüfling umbenennen</h3>
+            <input type="text" id="umbenennPrueflingName" placeholder="Neuer Name">
+            <div class="modal-buttons">
+                <button style="background: #27ae60; color: white;" onclick="prueflingUmbenennen()">Speichern</button>
+                <button style="background: #95a5a6; color: white;" onclick="umbenennModalSchliessen()">Abbrechen</button>
             </div>
         </div>
     </div>
@@ -1383,6 +1401,64 @@ if (sessionData.sport_type) {
             document.getElementById('neuPrueflingModal').classList.remove('active');
             document.getElementById('neuPrueflingName').value = '';
         }
+
+        // ========== PRÜFLING UMBENENNEN ==========
+        function umbenennModalOeffnen() {
+            if (!currentPruefling) return;
+            document.getElementById('umbenennPrueflingName').value = currentPruefling.name;
+            document.getElementById('umbenennPrueflingModal').classList.add('active');
+            document.getElementById('umbenennPrueflingName').focus();
+        }
+
+        function umbenennModalSchliessen() {
+            document.getElementById('umbenennPrueflingModal').classList.remove('active');
+            document.getElementById('umbenennPrueflingName').value = '';
+        }
+
+        async function prueflingUmbenennen() {
+            const neuerName = document.getElementById('umbenennPrueflingName').value.trim();
+            if (!neuerName) { alert('Bitte einen Namen eingeben.'); return; }
+            try {
+                const response = await fetch('/api/prueflings-update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prueflingId: currentPrueflingId, name: neuerName })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    currentPruefling.name = neuerName;
+                    const idx = prueflings.findIndex(p => p.id === currentPrueflingId);
+                    if (idx > -1) prueflings[idx].name = neuerName;
+                    aktualisierePrueflingDropdowns();
+                    document.getElementById('sidebarPrueflingSelect').value = currentPrueflingId;
+                    umbenennModalSchliessen();
+                } else {
+                    alert('Fehler: ' + data.error);
+                }
+            } catch (error) {
+                alert('Fehler beim Umbenennen: ' + error.message);
+            }
+        }
+
+        // ========== SESSION-METADATEN SPEICHERN (Datum, Prüfer etc.) ==========
+        async function speichereSessionMetadaten() {
+            if (!sessionData) return;
+            try {
+                await fetch('/api/sessions-update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId: sessionData.id,
+                        datum: document.getElementById('datum').value,
+                        pruefer: document.getElementById('pruefer').value,
+                        protokollant: document.getElementById('protokollant').value,
+                        fachpruefungsleitung: document.getElementById('fachpruefungsleitung').value
+                    })
+                });
+            } catch (error) {
+                console.error('Fehler beim Speichern der Metadaten:', error);
+            }
+        }
         
         async function prueflingHinzufuegen() {
             const name = document.getElementById('neuPrueflingName').value.trim();
@@ -1425,12 +1501,15 @@ if (sessionData.sport_type) {
             const input = document.getElementById('neuPrueflingName');
             if (input) {
                 input.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        prueflingHinzufuegen();
-                    }
+                    if (e.key === 'Enter') prueflingHinzufuegen();
                 });
             }
-
+            const umbenennInput = document.getElementById('umbenennPrueflingName');
+            if (umbenennInput) {
+                umbenennInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') prueflingUmbenennen();
+                });
+            }
         });
         
         // ========== PDF EXPORT ==========

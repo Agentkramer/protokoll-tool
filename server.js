@@ -15,6 +15,7 @@ const sessionsComplete = require('./api/sessions-complete');
 const sessionsActive = require('./api/sessions-active');
 const sessionsCompleted = require('./api/sessions-completed');
 const sessionsDelete = require('./api/sessions-delete');
+const sessionsUpdate = require('./api/sessions-update');
 const prueflingsUpdate = require('./api/prueflings-update');
 const prueflingsCreate = require('./api/prueflings-create');
 
@@ -26,6 +27,7 @@ app.post('/api/sessions-complete', sessionsComplete);
 app.get('/api/sessions-active', sessionsActive);
 app.get('/api/sessions-completed', sessionsCompleted);
 app.post('/api/sessions-delete', sessionsDelete);
+app.post('/api/sessions-update', sessionsUpdate);
 app.post('/api/prueflings-update', prueflingsUpdate);
 app.post('/api/prueflings-create', prueflingsCreate);
 

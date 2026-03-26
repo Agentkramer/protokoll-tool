@@ -155,6 +155,11 @@
             overflow: hidden;
             box-sizing: border-box;
             line-height: 1.5;
+            -webkit-user-select: text;
+            user-select: text;
+            -webkit-touch-callout: default;
+            touch-action: auto;
+            cursor: text;
         }
         #protokollInhalt textarea[data-manuell]:focus {
             border-left-color: #9c27b0;
@@ -632,10 +637,10 @@
             <!-- Metadaten -->
             <div class="metadaten">
                 <div class="metadaten-grid">
-                    <input type="date" id="datum" disabled>
-                    <input type="text" id="pruefer" placeholder="Prüfer/-in" disabled>
-                    <input type="text" id="protokollant" placeholder="Protokollant/-in" disabled>
-                    <input type="text" id="fachpruefungsleitung" placeholder="Fachprüfungsleitung" disabled colspan="3">
+                    <input type="date" id="datum" title="Datum ändern" onchange="speichereSessionMetadaten()">
+                    <input type="text" id="pruefer" placeholder="Prüfer/-in" title="Klicken zum Bearbeiten" onblur="speichereSessionMetadaten()">
+                    <input type="text" id="protokollant" placeholder="Protokollant/-in" title="Klicken zum Bearbeiten" onblur="speichereSessionMetadaten()">
+                    <input type="text" id="fachpruefungsleitung" placeholder="Fachprüfungsleitung" title="Klicken zum Bearbeiten" onblur="speichereSessionMetadaten()" colspan="3">
                 </div>
             </div>
             
@@ -725,7 +730,8 @@
                 <select id="prueflingSelect" class="pruefling-select" onchange="prueflingWechsel()">
                     <option value="">Prüfling auswählen...</option>
                 </select>
-                <button class="btn-neu" onclick="neuerPrueflingModal()">+ Neu</button>
+                <button class="btn-neu" onclick="neuerPrueflingModal()" title="Neuen Prüfling anlegen">+ Neu</button>
+                <button class="btn-neu" onclick="umbenennModalOeffnen()" title="Name des aktuellen Prüflings ändern" style="background:#e67e22; min-width:2.5em;">✏️</button>
             </div>
             
             <!-- Kategorie-Auswahl -->
@@ -754,6 +760,18 @@
             <div class="modal-buttons">
                 <button class="btn-modal-ok" onclick="prueflingHinzufuegen()">Hinzufügen</button>
                 <button class="btn-modal-cancel" onclick="modalSchliessen()">Abbrechen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Prüfling umbenennen -->
+    <div id="umbenennPrueflingModal" class="modal">
+        <div class="modal-content">
+            <h3>✏️ Prüfling umbenennen</h3>
+            <input type="text" id="umbenennPrueflingName" placeholder="Neuer Name">
+            <div class="modal-buttons">
+                <button class="btn-modal-ok" onclick="prueflingUmbenennen()">Speichern</button>
+                <button class="btn-modal-cancel" onclick="umbenennModalSchliessen()">Abbrechen</button>
             </div>
         </div>
     </div>
@@ -1825,6 +1843,64 @@
             document.getElementById('neuPrueflingModal').classList.remove('active');
             document.getElementById('neuPrueflingName').value = '';
         }
+
+        // ========== PRÜFLING UMBENENNEN ==========
+        function umbenennModalOeffnen() {
+            if (!currentPruefling) return;
+            document.getElementById('umbenennPrueflingName').value = currentPruefling.name;
+            document.getElementById('umbenennPrueflingModal').classList.add('active');
+            document.getElementById('umbenennPrueflingName').focus();
+        }
+
+        function umbenennModalSchliessen() {
+            document.getElementById('umbenennPrueflingModal').classList.remove('active');
+            document.getElementById('umbenennPrueflingName').value = '';
+        }
+
+        async function prueflingUmbenennen() {
+            const neuerName = document.getElementById('umbenennPrueflingName').value.trim();
+            if (!neuerName) { alert('Bitte einen Namen eingeben.'); return; }
+            try {
+                const response = await fetch('/api/prueflings-update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prueflingId: currentPruefling.id, name: neuerName })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    currentPruefling.name = neuerName;
+                    const idx = prueflings.findIndex(p => p.id === currentPruefling.id);
+                    if (idx > -1) prueflings[idx].name = neuerName;
+                    aktualisierePrueflingDropdowns();
+                    document.getElementById('prueflingSelect').value = currentPruefling.id;
+                    umbenennModalSchliessen();
+                } else {
+                    alert('Fehler: ' + data.error);
+                }
+            } catch (error) {
+                alert('Fehler beim Umbenennen: ' + error.message);
+            }
+        }
+
+        // ========== SESSION-METADATEN SPEICHERN ==========
+        async function speichereSessionMetadaten() {
+            if (!sessionData) return;
+            try {
+                await fetch('/api/sessions-update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId: sessionData.id,
+                        datum: document.getElementById('datum').value,
+                        pruefer: document.getElementById('pruefer').value,
+                        protokollant: document.getElementById('protokollant').value,
+                        fachpruefungsleitung: document.getElementById('fachpruefungsleitung').value
+                    })
+                });
+            } catch (error) {
+                console.error('Fehler beim Speichern der Metadaten:', error);
+            }
+        }
         
         async function prueflingHinzufuegen() {
             const name = document.getElementById('neuPrueflingName').value.trim();
@@ -1864,12 +1940,15 @@
             const input = document.getElementById('neuPrueflingName');
             if (input) {
                 input.addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') {
-                        prueflingHinzufuegen();
-                    }
+                    if (e.key === 'Enter') prueflingHinzufuegen();
                 });
             }
-
+            const umbenennInput = document.getElementById('umbenennPrueflingName');
+            if (umbenennInput) {
+                umbenennInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') prueflingUmbenennen();
+                });
+            }
         });
         
         // ========== PDF EXPORT ==========
